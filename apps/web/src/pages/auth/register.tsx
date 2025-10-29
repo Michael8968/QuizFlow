@@ -24,7 +24,7 @@ type RegisterForm = z.infer<typeof registerSchema>
 
 export function Register() {
   const navigate = useNavigate()
-  const { setUser } = useAuthStore()
+  const { } = useAuthStore()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
 

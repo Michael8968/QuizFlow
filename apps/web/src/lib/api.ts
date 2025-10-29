@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL as string
+const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY as string
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
@@ -11,7 +11,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // API 客户端
 class ApiClient {
-  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+  private baseUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
 
   async request<T>(
     endpoint: string,

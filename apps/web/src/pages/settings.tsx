@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { User, Mail, CreditCard, Bell, Shield, HelpCircle } from 'lucide-react'
+import { User, CreditCard, Bell, Shield, HelpCircle } from 'lucide-react'
 
 export function Settings() {
   return (

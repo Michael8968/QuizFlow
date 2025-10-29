@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import { QuizProvider } from '@/components/quiz/quiz-provider'
 import { EnterQuiz } from '@/pages/enter-quiz'
-import { QuizPage } from '@/pages/quiz-page'
-import { QuizResult } from '@/pages/quiz-result'
+import { QuizPage } from '@/pages/quiz-page.tsx'
+import { QuizResult } from '@/pages/quiz-result.tsx'
 
 function App() {
   return (

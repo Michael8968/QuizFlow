@@ -1,5 +1,4 @@
 import { createContext, useContext, ReactNode } from 'react'
-import { useQuizStore } from '@/stores/quiz'
 
 interface QuizContextType {
   // 这里可以添加其他需要共享的方法

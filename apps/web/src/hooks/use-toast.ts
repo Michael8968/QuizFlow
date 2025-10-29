@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { useToast } from '@/hooks/use-toast'
 
 const useToast = () => {
   const [toasts, setToasts] = React.useState<Array<{

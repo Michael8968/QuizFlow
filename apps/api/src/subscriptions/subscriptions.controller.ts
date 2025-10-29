@@ -12,13 +12,13 @@ export class SubscriptionsController {
 
   @Get()
   @ApiOperation({ summary: '获取订阅信息' })
-  async getSubscription(@Request() req) {
+  async getSubscription(@Request() req: any) {
     return this.subscriptionsService.getSubscription(req.user.id);
   }
 
   @Post()
   @ApiOperation({ summary: '创建订阅' })
-  async createSubscription(@Request() req, @Body() body: { plan: string }) {
+  async createSubscription(@Request() req: any, @Body() body: { plan: string }) {
     return this.subscriptionsService.createSubscription(req.user.id, body.plan);
   }
 }

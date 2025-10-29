@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { QuizState, Quiz, Answer } from '@/types'
+import { QuizState, Quiz } from '@/types'
 
 interface QuizStore extends QuizState {
   setQuiz: (quiz: Quiz) => void
@@ -25,7 +25,7 @@ const initialState: QuizState = {
 
 export const useQuizStore = create<QuizStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       
       setQuiz: (quiz) => set({ 
