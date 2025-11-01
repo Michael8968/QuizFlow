@@ -56,8 +56,19 @@ QuizFlow/
 
 ### 安装依赖
 ```bash
+# 标准安装（如果遇到 puppeteer 网络超时，会自动跳过脚本）
 pnpm install
+
+# 如果上述命令失败，使用以下命令跳过所有 postinstall 脚本
+pnpm install --ignore-scripts
 ```
+
+> **注意**: 由于 puppeteer 安装时需要从 Google 服务器下载 Chromium，可能遇到网络超时问题。项目已配置跳过 Chromium 自动下载。
+> 
+> 如需使用 PDF 导出功能，可以：
+> - 使用系统已安装的 Chrome/Chromium，通过 `PUPPETEER_EXECUTABLE_PATH` 环境变量指定路径
+> - 手动下载 Chromium 并配置路径
+> - 配置代理或使用国内镜像下载 Chromium
 
 ### 启动开发环境
 ```bash
