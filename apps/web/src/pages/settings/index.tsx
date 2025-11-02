@@ -1,10 +1,132 @@
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { User, CreditCard, Bell, Shield, HelpCircle } from 'lucide-react'
+import { useAuth } from '@/components/auth/auth-provider'
+import { useAuthStore } from '@/stores/auth'
+import { supabase } from '@/lib/api'
+import { useToast } from '@/hooks/use-toast'
+
+interface ProfileFormData {
+  name: string
+  email: string
+}
 
 export function Settings() {
+  const { user, isLoading } = useAuth()
+  const { setUser } = useAuthStore()
+  const { toast } = useToast()
+  const [isSaving, setIsSaving] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ProfileFormData>({
+    defaultValues: {
+      name: user?.name || '',
+      email: user?.email || '',
+    },
+  })
+
+  // 当用户信息加载后，更新表单默认值
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || '',
+        email: user.email || '',
+      })
+    }
+  }, [user, reset])
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">设置</h1>
+          <p className="mt-2 text-gray-600">管理您的账户设置和偏好</p>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-gray-500">加载中...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const onSubmit = async (data: ProfileFormData) => {
+    if (!user) {
+      toast({
+        title: '错误',
+        description: '未找到用户信息',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      // 更新 Supabase Auth 中的用户信息
+      const updateData: { email?: string; data?: { name: string } } = {}
+
+      if (data.email !== user.email) {
+        updateData.email = data.email
+      }
+
+      if (data.name !== user.name) {
+        updateData.data = { name: data.name }
+      }
+
+      // 更新 auth 用户信息
+      if (Object.keys(updateData).length > 0) {
+        const { error: authError } = await supabase.auth.updateUser(updateData)
+
+        if (authError) {
+          throw authError
+        }
+      }
+
+      // 更新 users 表中的信息
+      const { error: dbError } = await supabase
+        .from('users')
+        .update({
+          name: data.name,
+          email: data.email,
+        })
+        .eq('id', user.id)
+
+      if (dbError) {
+        throw dbError
+      }
+
+      // 更新本地 store 中的用户信息
+      const updatedUser = {
+        ...user,
+        name: data.name,
+        email: data.email,
+        updated_at: new Date().toISOString(),
+      }
+      setUser(updatedUser)
+
+      toast({
+        title: '保存成功',
+        description: '您的账户信息已更新',
+      })
+    } catch (error: any) {
+      console.error('更新用户信息失败:', error)
+      toast({
+        title: '保存失败',
+        description: error.message || '更新账户信息时出错，请稍后重试',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -28,21 +150,50 @@ export function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    姓名
-                  </label>
-                  <Input defaultValue="张三" />
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      姓名
+                    </label>
+                    <Input
+                      {...register('name', {
+                        required: '姓名不能为空',
+                        minLength: {
+                          value: 1,
+                          message: '姓名至少需要1个字符',
+                        },
+                      })}
+                      disabled={isSaving}
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      邮箱
+                    </label>
+                    <Input
+                      type="email"
+                      {...register('email', {
+                        required: '邮箱不能为空',
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: '请输入有效的邮箱地址',
+                        },
+                      })}
+                      disabled={isSaving}
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    邮箱
-                  </label>
-                  <Input type="email" defaultValue="zhangsan@example.com" />
-                </div>
-              </div>
-              <Button>保存更改</Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? '保存中...' : '保存更改'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 
@@ -127,9 +278,17 @@ export function Settings() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center">
-                <Badge variant="secondary" className="mb-2">免费版</Badge>
+                <Badge variant="secondary" className="mb-2">
+                  {user?.plan === 'free' ? '免费版' : 
+                   user?.plan === 'professional' ? '专业版' :
+                   user?.plan === 'institution' ? '机构版' :
+                   user?.plan === 'ai_enhanced' ? 'AI增强版' : '免费版'}
+                </Badge>
                 <p className="text-sm text-gray-600">
-                  当前使用免费版本
+                  当前使用{user?.plan === 'free' ? '免费' : 
+                           user?.plan === 'professional' ? '专业' :
+                           user?.plan === 'institution' ? '机构' :
+                           user?.plan === 'ai_enhanced' ? 'AI增强' : '免费'}版本
                 </p>
               </div>
               <div className="space-y-2 text-sm">

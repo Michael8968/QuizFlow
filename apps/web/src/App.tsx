@@ -6,7 +6,7 @@ import { Dashboard } from '@/pages/dashboard'
 import { Questions } from '@/pages/questions'
 import { Papers } from '@/pages/papers'
 import { Reports } from '@/pages/reports'
-import { Settings } from '@/pages/settings'
+import { Settings } from '@/pages/settings/index'
 import { Login } from '@/pages/auth/login'
 import { Register } from '@/pages/auth/register'
 
