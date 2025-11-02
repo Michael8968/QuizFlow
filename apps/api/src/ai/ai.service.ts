@@ -8,6 +8,7 @@ export class AiService {
 
   constructor(private configService: ConfigService) {
     this.openai = new OpenAI({
+      baseURL: 'https://api.deepseek.com',
       apiKey: this.configService.get('OPENAI_API_KEY'),
     });
   }
@@ -40,7 +41,8 @@ export class AiService {
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        // model: 'gpt-3.5-turbo',
+        model: "deepseek-chat",
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt },

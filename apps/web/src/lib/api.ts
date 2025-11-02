@@ -1,17 +1,22 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY as string
+// 环境变量
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
+// 验证必需的环境变量
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  throw new Error(
+    '缺少必需的环境变量：VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY。请检查 .env 文件配置。'
+  )
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // API 客户端
 class ApiClient {
-  private baseUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
+  private baseUrl = apiUrl
 
   async request<T>(
     endpoint: string,
