@@ -18,22 +18,35 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 class ApiClient {
   private baseUrl = apiUrl
 
+  private async getAuthToken(): Promise<string | null> {
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token || null
+  }
+
   async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`
+    const url = `${this.baseUrl}/api${endpoint}`
+    const token = await this.getAuthToken()
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    }
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
     
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
       ...options,
     })
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
     return response.json()
@@ -73,7 +86,7 @@ class ApiClient {
 
   async updateQuestion(id: string, question: any) {
     return this.request(`/questions/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(question),
     })
   }
