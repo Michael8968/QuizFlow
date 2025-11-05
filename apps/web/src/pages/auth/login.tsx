@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { supabase } from '@/lib/api'
+import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,41 +34,34 @@ export function Login() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true)
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      })
-
-      if (error) {
-        toast({
-          title: '登录失败',
-          description: error.message,
-          variant: 'destructive',
-        })
-        return
+      const response = await api.login(data.email, data.password) as {
+        user: any
+        accessToken: string
       }
 
-      if (authData.user) {
+      if (response.user && response.accessToken) {
         const userData = {
-          id: authData.user.id,
-          email: authData.user.email || '',
-          name: authData.user.user_metadata?.name || authData.user.email?.split('@')[0] || '',
-          role: 'teacher' as const,
-          plan: 'free' as const,
-          created_at: authData.user.created_at,
-          updated_at: authData.user.updated_at || authData.user.created_at,
+          id: response.user.id,
+          email: response.user.email || '',
+          name: response.user.name || response.user.email?.split('@')[0] || '',
+          role: response.user.role || 'teacher' as const,
+          plan: response.user.plan || 'free' as const,
+          created_at: response.user.created_at,
+          updated_at: response.user.updated_at || response.user.created_at,
         }
         setUser(userData)
+        // 存储 JWT token
+        useAuthStore.getState().setToken(response.accessToken)
         toast({
           title: '登录成功',
           description: '欢迎回来！',
         })
         navigate('/')
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: '登录失败',
-        description: '请检查网络连接后重试',
+        description: error.message || '请检查网络连接后重试',
         variant: 'destructive',
       })
     } finally {

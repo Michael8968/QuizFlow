@@ -18,9 +18,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 class ApiClient {
   private baseUrl = apiUrl
 
-  private async getAuthToken(): Promise<string | null> {
-    const { data: { session } } = await supabase.auth.getSession()
-    return session?.access_token || null
+  private getAuthToken(): string | null {
+    // 从 localStorage 获取存储的 token
+    try {
+      const authStorage = localStorage.getItem('auth-storage')
+      if (authStorage) {
+        const parsed = JSON.parse(authStorage)
+        return parsed.state?.token || null
+      }
+    } catch (error) {
+      console.error('Error reading auth token:', error)
+    }
+    return null
   }
 
   async request<T>(

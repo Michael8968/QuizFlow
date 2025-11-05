@@ -135,10 +135,15 @@ export function Questions() {
   }
 
   const handleSubmit = async (questionData: any) => {
-    if (editingQuestion) {
-      await updateMutation.mutateAsync({ id: editingQuestion.id, data: questionData })
-    } else {
-      await createMutation.mutateAsync(questionData)
+    try {
+      if (editingQuestion) {
+        await updateMutation.mutateAsync({ id: editingQuestion.id, data: questionData })
+      } else {
+        await createMutation.mutateAsync(questionData)
+      }
+    } catch (error) {
+      // 错误已经在 mutation 的 onError 中处理，这里不需要额外处理
+      console.error('提交题目失败:', error)
     }
   }
 
@@ -311,19 +316,19 @@ export function Questions() {
       )}
 
       {/* 题目表单对话框 */}
-      <QuestionFormDialog
+      {isFormDialogOpen && <QuestionFormDialog
         open={isFormDialogOpen}
         onOpenChange={setIsFormDialogOpen}
         question={editingQuestion}
         onSubmit={handleSubmit}
-      />
+      />}
 
       {/* 题目详情对话框 */}
-      <QuestionDetailDialog
+      {isDetailDialogOpen && <QuestionDetailDialog
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         question={viewingQuestion}
-      />
+      />}
     </div>
   )
 }

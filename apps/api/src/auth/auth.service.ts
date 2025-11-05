@@ -86,8 +86,20 @@ export class AuthService {
       throw new UnauthorizedException('登录失败');
     }
 
-    // 获取用户信息
-    const user = await this.supabaseService.getUserById(authData.user.id);
+    // 获取用户信息，如果不存在则创建
+    let user = await this.supabaseService.getUserById(authData.user.id);
+    
+    if (!user) {
+      // 如果用户记录不存在，创建用户记录
+      const userData = {
+        id: authData.user.id,
+        email: authData.user.email!,
+        name: authData.user.user_metadata?.name || authData.user.email?.split('@')[0] || '用户',
+        role: 'teacher',
+        plan: 'free',
+      };
+      user = await this.supabaseService.createUser(userData);
+    }
 
     // 生成 JWT token
     const accessToken = await this.jwtService.generateAccessToken(user.id, user.email);
@@ -99,11 +111,18 @@ export class AuthService {
   }
 
   async validateUser(userId: string) {
-    return await this.supabaseService.getUserById(userId);
+    const user = await this.supabaseService.getUserById(userId);
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    return user;
   }
 
   async refreshToken(userId: string) {
     const user = await this.supabaseService.getUserById(userId);
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
     const accessToken = await this.jwtService.generateAccessToken(user.id, user.email);
     return { accessToken };
   }

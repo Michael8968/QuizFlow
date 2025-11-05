@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { supabase } from '@/lib/api'
+import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,36 +39,33 @@ export function Register() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true)
     try {
-      const { data: authData, error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            name: data.name,
-          },
-        },
-      })
-
-      if (error) {
-        toast({
-          title: '注册失败',
-          description: error.message,
-          variant: 'destructive',
-        })
-        return
+      const response = await api.register(data.email, data.password, data.name) as {
+        user: any
+        accessToken: string
       }
 
-      if (authData.user) {
+      if (response.user && response.accessToken) {
+        const userData = {
+          id: response.user.id,
+          email: response.user.email || '',
+          name: response.user.name || response.user.email?.split('@')[0] || '',
+          role: response.user.role || 'teacher' as const,
+          plan: response.user.plan || 'free' as const,
+          created_at: response.user.created_at,
+          updated_at: response.user.updated_at || response.user.created_at,
+        }
+        useAuthStore.getState().setUser(userData)
+        useAuthStore.getState().setToken(response.accessToken)
         toast({
           title: '注册成功',
-          description: '请检查您的邮箱以验证账户',
+          description: '账户创建成功！',
         })
-        navigate('/login')
+        navigate('/')
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: '注册失败',
-        description: '请检查网络连接后重试',
+        description: error.message || '请检查网络连接后重试',
         variant: 'destructive',
       })
     } finally {

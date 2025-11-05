@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Question } from '@/types'
 import { Plus, X } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 const questionSchema = z.object({
   type: z.enum(['single', 'multiple', 'fill', 'essay']),
@@ -21,7 +22,6 @@ const questionSchema = z.object({
   options: z.array(z.string()).optional(),
   answer: z.string().min(1, '答案不能为空'),
   explanation: z.string().optional(),
-  tags: z.string().min(1, '至少需要一个标签'),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   points: z.number().min(1).max(100),
 })
@@ -44,6 +44,7 @@ export function QuestionFormDialog({
   const [options, setOptions] = useState<string[]>(['', '', '', ''])
   const [tags, setTags] = useState<string[]>([''])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
 
   const {
     register,
@@ -67,7 +68,23 @@ export function QuestionFormDialog({
   const isChoiceType = questionType === 'single' || questionType === 'multiple'
 
   useEffect(() => {
+    if (!open) {
+      // 对话框关闭时重置表单
+      reset({
+        type: 'single',
+        content: '',
+        answer: '',
+        explanation: '',
+        difficulty: 'medium',
+        points: 5,
+      })
+      setOptions(['', '', '', ''])
+      setTags([''])
+      return
+    }
+
     if (question) {
+      // 编辑模式：填充现有数据
       reset({
         type: question.type,
         content: question.content,
@@ -87,6 +104,7 @@ export function QuestionFormDialog({
         setTags([''])
       }
     } else {
+      // 新建模式：使用默认值
       reset({
         type: 'single',
         content: '',
@@ -129,6 +147,7 @@ export function QuestionFormDialog({
   }
 
   const onFormSubmit = async (data: QuestionFormData) => {
+    console.log('onFormSubmit', data)
     setIsSubmitting(true)
     try {
       const validOptions = isChoiceType ? options.filter(opt => opt.trim() !== '') : undefined
@@ -151,13 +170,15 @@ export function QuestionFormDialog({
         options: validOptions,
         tags: validTags,
       })
-      onOpenChange(false)
-      reset()
-      setOptions(['', '', '', ''])
-      setTags([''])
+      // 成功时由父组件处理对话框关闭和状态重置
     } catch (error: any) {
       console.error('提交失败:', error)
-      alert(error.message || '提交失败，请重试')
+      toast({
+        title: '提交失败',
+        description: error.message || '提交失败，请重试',
+        variant: 'destructive',
+      })
+      throw error // 重新抛出错误，让父组件也能处理
     } finally {
       setIsSubmitting(false)
     }

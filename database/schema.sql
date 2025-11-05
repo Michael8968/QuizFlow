@@ -132,6 +132,14 @@ CREATE POLICY "Users can view own data" ON users
 CREATE POLICY "Users can update own data" ON users
   FOR UPDATE USING (auth.uid() = id);
 
+-- 允许服务角色插入用户（后端 API 使用）
+CREATE POLICY "Service role can insert users" ON users
+  FOR INSERT WITH CHECK (true);
+
+-- 允许用户查看和更新自己的数据（通过认证）
+CREATE POLICY "Users can insert own data" ON users
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- 题目策略
 CREATE POLICY "Users can view own questions" ON questions
   FOR SELECT USING (auth.uid() = user_id);

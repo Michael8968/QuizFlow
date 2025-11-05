@@ -29,7 +29,13 @@ export class SupabaseService {
       .eq('id', id)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      // 如果是找不到记录的错误（PostgREST 或 Supabase），返回 null 而不是抛出
+      if (error.code === 'PGRST116' || error.message?.includes('No rows') || error.details?.includes('No rows')) {
+        return null;
+      }
+      throw error;
+    }
     return data;
   }
 
