@@ -9,6 +9,7 @@ import { api } from '@/lib/api'
 import { Question } from '@/types'
 import { QuestionFormDialog } from '@/components/question-form-dialog'
 import { QuestionDetailDialog } from '@/components/question-detail-dialog'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 
 export function Questions() {
@@ -16,8 +17,10 @@ export function Questions() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('all')
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null)
+  const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null)
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
@@ -123,9 +126,15 @@ export function Questions() {
     setIsFormDialogOpen(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('确定要删除这道题目吗？此操作不可撤销。')) {
-      deleteMutation.mutate(id)
+  const handleDelete = (id: string) => {
+    setDeletingQuestionId(id)
+    setIsConfirmDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (deletingQuestionId) {
+      deleteMutation.mutate(deletingQuestionId)
+      setDeletingQuestionId(null)
     }
   }
 
@@ -329,6 +338,18 @@ export function Questions() {
         onOpenChange={setIsDetailDialogOpen}
         question={viewingQuestion}
       />}
+
+      {/* 确认删除对话框 */}
+      <ConfirmDialog
+        open={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+        title="确认删除"
+        description="确定要删除这道题目吗？此操作不可撤销。"
+        confirmText="删除"
+        cancelText="取消"
+        onConfirm={handleConfirmDelete}
+        variant="destructive"
+      />
     </div>
   )
 }
