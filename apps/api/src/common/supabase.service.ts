@@ -122,10 +122,7 @@ export class SupabaseService {
   async getPapers(userId: string) {
     const { data, error } = await this.supabase
       .from('papers')
-      .select(`
-        *,
-        questions:questions(*)
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     

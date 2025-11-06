@@ -58,7 +58,27 @@ class ApiClient {
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
-    return response.json()
+    // 处理空响应（如 DELETE 操作可能返回 204 No Content 或空响应体）
+    const text = await response.text()
+    
+    // 如果响应体为空，返回空对象
+    if (!text || text.trim() === '') {
+      return {} as T
+    }
+
+    // 尝试解析 JSON 响应
+    try {
+      return JSON.parse(text)
+    } catch (error) {
+      // 如果解析失败，检查 content-type
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        // 如果是 JSON 类型但解析失败，抛出错误
+        throw new Error(`Failed to parse JSON response: ${error}`)
+      }
+      // 如果不是 JSON 类型，返回空对象
+      return {} as T
+    }
   }
 
   // 认证相关
@@ -120,7 +140,7 @@ class ApiClient {
 
   async updatePaper(id: string, paper: any) {
     return this.request(`/papers/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(paper),
     })
   }
@@ -129,6 +149,10 @@ class ApiClient {
     return this.request(`/papers/${id}`, {
       method: 'DELETE',
     })
+  }
+
+  async getPaper(id: string) {
+    return this.request(`/papers/${id}`)
   }
 
   // AI 出题
