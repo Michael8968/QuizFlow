@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { QrCode, BookOpen, Clock, Users } from 'lucide-react'
+import { api } from '@/lib/api'
+import type { Quiz } from '@/types'
 
 const enterQuizSchema = z.object({
   quizCode: z.string().min(1, '请输入考试码'),
@@ -17,68 +19,124 @@ const enterQuizSchema = z.object({
 
 type EnterQuizForm = z.infer<typeof enterQuizSchema>
 
-// 模拟数据
-const mockQuiz = {
-  id: '1',
-  title: 'JavaScript 基础测试',
-  description: '测试学生对 JavaScript 基础知识的掌握程度',
-  questions: [
-    {
-      id: 'q1',
-      type: 'single' as const,
-      content: '下列哪个是 JavaScript 的基本数据类型？',
-      options: ['String', 'Object', 'Array', 'Function'],
-      points: 5,
-      order: 1,
-    },
-    {
-      id: 'q2',
-      type: 'multiple' as const,
-      content: '以下哪些是 React 的特点？',
-      options: ['虚拟DOM', '组件化', '双向数据绑定', '单向数据流'],
-      points: 10,
-      order: 2,
-    },
-    {
-      id: 'q3',
-      type: 'fill' as const,
-      content: '在 CSS 中，使用 _____ 属性可以设置元素的背景颜色。',
-      points: 3,
-      order: 3,
-    },
-  ],
-  settings: {
-    time_limit: 30,
-    shuffle_questions: false,
-    shuffle_options: false,
-    show_correct_answer: true,
-    allow_review: true,
-  },
-  created_at: '2024-01-15T10:30:00Z',
+// 将数据库格式转换为前端格式
+function transformPaperToQuiz(paper: any): Quiz {
+  const questions = Array.isArray(paper.questions) 
+    ? paper.questions.map((q: any, index: number) => ({
+        id: q.id || String(index),
+        type: q.type,
+        content: q.content,
+        options: q.options || [],
+        answer: q.answer,
+        explanation: q.explanation,
+        points: q.points || 5,
+        order: index + 1,
+      }))
+    : []
+
+  const settings = typeof paper.settings === 'object' && paper.settings !== null
+    ? {
+        time_limit: paper.settings.time_limit || undefined,
+        shuffle_questions: paper.settings.shuffle_questions || false,
+        shuffle_options: paper.settings.shuffle_options || false,
+        show_correct_answer: paper.settings.show_correct_answer ?? true,
+        allow_review: paper.settings.allow_review ?? true,
+      }
+    : {
+        shuffle_questions: false,
+        shuffle_options: false,
+        show_correct_answer: true,
+        allow_review: true,
+      }
+
+  return {
+    id: paper.id,
+    title: paper.title,
+    description: paper.description,
+    questions,
+    settings,
+    created_at: paper.created_at,
+  }
 }
 
 export function EnterQuiz() {
   const navigate = useNavigate()
   const { setQuiz } = useQuizStore()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [paperInfo, setPaperInfo] = useState<Quiz | null>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<EnterQuizForm>({
     resolver: zodResolver(enterQuizSchema),
   })
 
-  const onSubmit = async (_data: EnterQuizForm) => {
+  const quizCode = watch('quizCode')
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 当考试码变化时，尝试获取试卷信息（带防抖）
+  useEffect(() => {
+    // 清除之前的定时器
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    if (!quizCode || quizCode.length < 1) {
+      setPaperInfo(null)
+      setError(null)
+      return
+    }
+
+    // 设置防抖，500ms 后执行
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        setError(null)
+        const paper = await api.getPaperByCode(quizCode)
+        if (paper) {
+          const quiz = transformPaperToQuiz(paper)
+          setPaperInfo(quiz)
+        } else {
+          setPaperInfo(null)
+          setError('未找到该考试码对应的试卷')
+        }
+      } catch (err) {
+        setPaperInfo(null)
+        setError(err instanceof Error ? err.message : '获取试卷信息失败')
+      }
+    }, 500)
+
+    // 清理函数
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [quizCode])
+
+  const onSubmit = async (data: EnterQuizForm) => {
     setIsLoading(true)
+    setError(null)
     
-    // 模拟 API 调用
-    setTimeout(() => {
-      setQuiz(mockQuiz)
-      navigate(`/quiz/${mockQuiz.id}`)
+    try {
+      const paper = await api.getPaperByCode(data.quizCode)
+      
+      if (!paper) {
+        setError('未找到该考试码对应的试卷，请检查考试码是否正确')
+        setIsLoading(false)
+        return
+      }
+
+      const quiz = transformPaperToQuiz(paper)
+      setQuiz(quiz)
+      navigate(`/quiz/${quiz.id}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取试卷失败，请稍后重试')
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -112,6 +170,9 @@ export function EnterQuiz() {
                 />
                 {errors.quizCode && (
                   <p className="mt-1 text-sm text-red-600">{errors.quizCode.message}</p>
+                )}
+                {error && !errors.quizCode && (
+                  <p className="mt-1 text-sm text-red-600">{error}</p>
                 )}
               </div>
 
@@ -164,27 +225,34 @@ export function EnterQuiz() {
         </div>
 
         {/* 考试信息预览 */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg">考试信息</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center text-sm text-gray-600">
-                <BookOpen className="mr-2 h-4 w-4" />
-                <span>题目数量: {mockQuiz.questions.length} 题</span>
+        {paperInfo && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-lg">{paperInfo.title}</CardTitle>
+              {paperInfo.description && (
+                <CardDescription>{paperInfo.description}</CardDescription>
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center text-sm text-gray-600">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <span>题目数量: {paperInfo.questions.length} 题</span>
+                </div>
+                {paperInfo.settings.time_limit && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Clock className="mr-2 h-4 w-4" />
+                    <span>考试时长: {paperInfo.settings.time_limit} 分钟</span>
+                  </div>
+                )}
+                <div className="flex items-center text-sm text-gray-600">
+                  <Users className="mr-2 h-4 w-4" />
+                  <span>总分: {paperInfo.questions.reduce((sum, q) => sum + q.points, 0)} 分</span>
+                </div>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="mr-2 h-4 w-4" />
-                <span>考试时长: {mockQuiz.settings.time_limit} 分钟</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Users className="mr-2 h-4 w-4" />
-                <span>总分: {mockQuiz.questions.reduce((sum, q) => sum + q.points, 0)} 分</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

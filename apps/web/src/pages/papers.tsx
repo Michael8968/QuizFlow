@@ -325,6 +325,29 @@ export function Papers() {
                         {paper.settings?.time_limit ? `${paper.settings.time_limit} 分钟` : '无限制'}
                       </span>
                     </div>
+                    {paper.status === 'published' && paper.quiz_code && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">考试码</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-semibold text-primary">{paper.quiz_code}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigator.clipboard.writeText(paper.quiz_code!)
+                              toast({
+                                title: '已复制',
+                                description: `考试码 ${paper.quiz_code} 已复制到剪贴板`,
+                              })
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     {paper.answerCount !== undefined && (
                       <>
                         <div className="flex justify-between text-sm text-gray-600">

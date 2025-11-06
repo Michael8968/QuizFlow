@@ -131,6 +131,11 @@ export class SupabaseService {
   }
 
   async createPaper(paperData: any) {
+    // 如果状态为 published 且没有 quiz_code，自动生成
+    if (paperData.status === 'published' && !paperData.quiz_code) {
+      paperData.quiz_code = await this.generateUniqueQuizCode();
+    }
+    
     const { data, error } = await this.supabase
       .from('papers')
       .insert(paperData)
@@ -142,6 +147,21 @@ export class SupabaseService {
   }
 
   async updatePaper(id: string, paperData: any) {
+    // 如果状态变为 published 且当前没有 quiz_code，自动生成
+    if (paperData.status === 'published') {
+      // 先获取当前试卷信息
+      const { data: currentPaper } = await this.supabase
+        .from('papers')
+        .select('quiz_code')
+        .eq('id', id)
+        .single();
+
+      // 如果当前没有 quiz_code，生成一个
+      if (!currentPaper?.quiz_code && !paperData.quiz_code) {
+        paperData.quiz_code = await this.generateUniqueQuizCode();
+      }
+    }
+    
     const { data, error } = await this.supabase
       .from('papers')
       .update(paperData)
@@ -160,6 +180,63 @@ export class SupabaseService {
       .eq('id', id);
     
     if (error) throw error;
+  }
+
+  // 生成唯一的考试码
+  private generateQuizCode(): string {
+    // 生成 6 位大写字母数字组合
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 排除容易混淆的字符
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
+
+  // 生成并确保唯一的考试码
+  async generateUniqueQuizCode(): Promise<string> {
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      const code = this.generateQuizCode();
+      
+      // 检查代码是否已存在
+      const { data, error } = await this.supabase
+        .from('papers')
+        .select('id')
+        .eq('quiz_code', code)
+        .single();
+
+      // 如果查询出错（通常是找不到记录），说明代码可用
+      if (error && (error.code === 'PGRST116' || error.message?.includes('No rows'))) {
+        return code;
+      }
+
+      // 如果找到了记录，说明代码已存在，继续尝试
+      attempts++;
+    }
+
+    // 如果多次尝试都失败，使用时间戳作为后缀
+    const baseCode = this.generateQuizCode();
+    return `${baseCode.substring(0, 4)}${Date.now().toString().slice(-2)}`;
+  }
+
+  async getPaperByCode(quizCode: string) {
+    const { data, error } = await this.supabase
+      .from('papers')
+      .select('*')
+      .eq('quiz_code', quizCode)
+      .eq('status', 'published')
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116' || error.message?.includes('No rows') || error.details?.includes('No rows')) {
+        return null;
+      }
+      throw error;
+    }
+    return data;
   }
 
   // 答卷相关操作

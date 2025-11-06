@@ -38,6 +38,7 @@ export interface Paper {
     allow_review: boolean
   }
   status: 'draft' | 'published' | 'archived'
+  quiz_code?: string
   created_at: string
   updated_at: string
 }

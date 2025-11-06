@@ -21,4 +21,8 @@ export class PapersService {
   async remove(id: string, userId: string) {
     return this.supabaseService.deletePaper(id);
   }
+
+  async findByCode(quizCode: string) {
+    return this.supabaseService.getPaperByCode(quizCode);
+  }
 }
