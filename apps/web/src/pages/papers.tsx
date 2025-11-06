@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Edit, Trash2, Eye, Copy, BarChart3, Loader2 } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Copy, BarChart3, Loader2, QrCode } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { Paper, Question } from '@/types'
 import { PaperFormDialog } from '@/components/papers/paper-form-dialog'
 import { PaperPreviewDialog } from '@/components/papers/paper-preview-dialog'
+import { QRCodeDialog } from '@/components/papers/qr-code-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 
@@ -26,6 +27,7 @@ export function Papers() {
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null)
   const [previewingPaper, setPreviewingPaper] = useState<Paper | null>(null)
   const [deletingPaperId, setDeletingPaperId] = useState<string | null>(null)
+  const [qrCodePaper, setQrCodePaper] = useState<Paper | null>(null)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -326,27 +328,43 @@ export function Papers() {
                       </span>
                     </div>
                     {paper.status === 'published' && paper.quiz_code && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">考试码</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-primary">{paper.quiz_code}</span>
+                      <>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-600">考试码</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-semibold text-primary">{paper.quiz_code}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                navigator.clipboard.writeText(paper.quiz_code!)
+                                toast({
+                                  title: '已复制',
+                                  description: `考试码 ${paper.quiz_code} 已复制到剪贴板`,
+                                })
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="pt-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="h-6 w-6 p-0"
+                            className="w-full"
                             onClick={(e) => {
                               e.stopPropagation()
-                              navigator.clipboard.writeText(paper.quiz_code!)
-                              toast({
-                                title: '已复制',
-                                description: `考试码 ${paper.quiz_code} 已复制到剪贴板`,
-                              })
+                              setQrCodePaper(paper)
                             }}
                           >
-                            <Copy className="h-3 w-3" />
+                            <QrCode className="mr-2 h-4 w-4" />
+                            显示二维码
                           </Button>
                         </div>
-                      </div>
+                      </>
                     )}
                     {paper.answerCount !== undefined && (
                       <>
@@ -473,6 +491,20 @@ export function Papers() {
         onConfirm={handleConfirmDelete}
         variant="destructive"
       />
+
+      {/* 二维码对话框 */}
+      {qrCodePaper && qrCodePaper.quiz_code && (
+        <QRCodeDialog
+          open={!!qrCodePaper}
+          onOpenChange={(open) => {
+            if (!open) {
+              setQrCodePaper(null)
+            }
+          }}
+          quizCode={qrCodePaper.quiz_code}
+          paperTitle={qrCodePaper.title}
+        />
+      )}
     </div>
   )
 }

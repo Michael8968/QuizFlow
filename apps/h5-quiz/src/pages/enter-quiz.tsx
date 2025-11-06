@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { QrCode, BookOpen, Clock, Users } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { Quiz } from '@/types'
+import { QRScanner } from '@/components/qr-scanner'
 
 const enterQuizSchema = z.object({
   quizCode: z.string().min(1, '请输入考试码'),
@@ -71,9 +72,12 @@ export function EnterQuiz() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<EnterQuizForm>({
     resolver: zodResolver(enterQuizSchema),
   })
+
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false)
 
   const quizCode = watch('quizCode')
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -137,6 +141,12 @@ export function EnterQuiz() {
       setError(err instanceof Error ? err.message : '获取试卷失败，请稍后重试')
       setIsLoading(false)
     }
+  }
+
+  const handleQRScanSuccess = (code: string) => {
+    // 将扫描到的二维码内容填入考试码字段
+    setValue('quizCode', code.trim())
+    setIsQRScannerOpen(false)
   }
 
   return (
@@ -218,11 +228,23 @@ export function EnterQuiz() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500 mb-4">或者</p>
-          <Button variant="outline" className="w-full">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => setIsQRScannerOpen(true)}
+            type="button"
+          >
             <QrCode className="mr-2 h-4 w-4" />
             扫描二维码进入
           </Button>
         </div>
+
+        {/* 二维码扫描对话框 */}
+        <QRScanner
+          open={isQRScannerOpen}
+          onClose={() => setIsQRScannerOpen(false)}
+          onScanSuccess={handleQRScanSuccess}
+        />
 
         {/* 考试信息预览 */}
         {paperInfo && (

@@ -1,13 +1,15 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuizStore } from '@/stores/quiz'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, XCircle, RotateCcw, Home } from 'lucide-react'
+import { CheckCircle, XCircle, RotateCcw, Home, X, CheckCircle2 } from 'lucide-react'
 
 export function QuizResult() {
   const { answerId: _answerId } = useParams()
   const navigate = useNavigate()
   const { quiz, answers, reset } = useQuizStore()
+  const [showReview, setShowReview] = useState(false)
 
   if (!quiz) {
     return (
@@ -20,32 +22,76 @@ export function QuizResult() {
     )
   }
 
+  // 比较答案是否相等（处理数组和字符串）
+  const isAnswerCorrect = (question: any, userAnswers: string | string[]): boolean => {
+    if (!question.answer) return false
+    
+    const correctAnswer = Array.isArray(question.answer) ? question.answer : [question.answer]
+    const userAnswerArray = Array.isArray(userAnswers) ? userAnswers : [userAnswers]
+    
+    // 对数组进行排序后比较（用于多选题）
+    if (question.type === 'multiple') {
+      const sortedCorrect = [...correctAnswer].sort()
+      const sortedUser = [...userAnswerArray].sort()
+      return sortedCorrect.length === sortedUser.length && 
+             sortedCorrect.every((val, idx) => val === sortedUser[idx])
+    }
+    
+    // 单选题和填空题
+    if (question.type === 'single') {
+      return correctAnswer[0] === userAnswerArray[0]
+    }
+    
+    // 填空题：简单比较（可以后续优化为模糊匹配）
+    if (question.type === 'fill') {
+      const userText = (userAnswerArray[0] || '').trim().toLowerCase()
+      const correctText = (correctAnswer[0] || '').trim().toLowerCase()
+      return userText === correctText
+    }
+    
+    return false
+  }
+
   // 计算分数
   const calculateScore = () => {
     let totalScore = 0
     let maxScore = 0
+    let answeredCount = 0
 
     quiz.questions.forEach(question => {
       maxScore += question.points
-      const userAnswers = answers[question.id] || []
+      const userAnswers = answers[question.id]
       
-      if (question.type === 'single' || question.type === 'multiple') {
-        // 这里简化处理，实际应该与正确答案比较
-        // 现在假设所有答案都正确
-        totalScore += question.points
-      } else if (question.type === 'fill') {
-        // 填空题的评分逻辑
-        if (userAnswers.length > 0 && userAnswers[0].trim()) {
-          totalScore += question.points
+      // 计算已答题数量
+      if (userAnswers !== undefined && userAnswers !== null) {
+        const answerArray = Array.isArray(userAnswers) ? userAnswers : [userAnswers]
+        if (answerArray.length > 0 && answerArray.some(a => a && String(a).trim())) {
+          answeredCount++
+        }
+      }
+      
+      // 计算得分
+      if (userAnswers !== undefined && userAnswers !== null) {
+        if (question.type === 'single' || question.type === 'multiple') {
+          if (isAnswerCorrect(question, userAnswers)) {
+            totalScore += question.points
+          }
+        } else if (question.type === 'fill') {
+          const answerArray = Array.isArray(userAnswers) ? userAnswers : [userAnswers]
+          if (answerArray.length > 0 && answerArray[0] && answerArray[0].trim()) {
+            if (isAnswerCorrect(question, userAnswers)) {
+              totalScore += question.points
+            }
+          }
         }
       }
     })
 
-    return { totalScore, maxScore }
+    return { totalScore, maxScore, answeredCount }
   }
 
-  const { totalScore, maxScore } = calculateScore()
-  const percentage = Math.round((totalScore / maxScore) * 100)
+  const { totalScore, maxScore, answeredCount } = calculateScore()
+  const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0
 
   const handleRestart = () => {
     reset()
@@ -53,8 +99,7 @@ export function QuizResult() {
   }
 
   const handleReview = () => {
-    // 这里可以实现查看详细答案的功能
-    console.log('Review answers:', answers)
+    setShowReview(true)
   }
 
   return (
@@ -123,7 +168,7 @@ export function QuizResult() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {quiz.questions.length}
+                  {answeredCount}
                 </div>
                 <div className="text-sm text-gray-600">已答题</div>
               </div>
@@ -161,6 +206,145 @@ export function QuizResult() {
           </div>
         </div>
       </div>
+
+      {/* 详细答案查看模态框 */}
+      {showReview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-xl font-bold">详细答案</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowReview(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="overflow-y-auto flex-1 p-4 space-y-4">
+              {quiz.questions.map((question, index) => {
+                const userAnswers = answers[question.id]
+                const userAnswerArray = userAnswers 
+                  ? (Array.isArray(userAnswers) ? userAnswers : [userAnswers])
+                  : []
+                const correctAnswer = question.answer
+                  ? (Array.isArray(question.answer) ? question.answer : [question.answer])
+                  : []
+                const isCorrect = userAnswers !== undefined && isAnswerCorrect(question, userAnswers || [])
+                
+                return (
+                  <Card key={question.id} className={isCorrect ? 'border-green-200' : 'border-red-200'}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-base mb-2">
+                            第 {index + 1} 题 {question.type === 'single' && '(单选题)'}
+                            {question.type === 'multiple' && '(多选题)'}
+                            {question.type === 'fill' && '(填空题)'}
+                            <span className="text-sm text-gray-500 ml-2">({question.points} 分)</span>
+                          </CardTitle>
+                          <p className="text-gray-700 mb-3">{question.content}</p>
+                        </div>
+                        <div className="ml-4">
+                          {isCorrect ? (
+                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                          ) : (
+                            <XCircle className="w-6 h-6 text-red-600" />
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {/* 选项显示（选择题） */}
+                      {question.options && question.options.length > 0 && (
+                        <div className="space-y-2">
+                          {question.options.map((option, optIndex) => {
+                            const isUserSelected = userAnswerArray.includes(option)
+                            const isCorrectOption = correctAnswer.includes(option)
+                            
+                            return (
+                              <div
+                                key={optIndex}
+                                className={`p-2 rounded border ${
+                                  isCorrectOption
+                                    ? 'bg-green-50 border-green-300'
+                                    : isUserSelected && !isCorrectOption
+                                    ? 'bg-red-50 border-red-300'
+                                    : 'bg-gray-50 border-gray-200'
+                                }`}
+                              >
+                                <div className="flex items-center">
+                                  {isCorrectOption && (
+                                    <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                                  )}
+                                  {isUserSelected && !isCorrectOption && (
+                                    <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                                  )}
+                                  <span className={isCorrectOption ? 'font-semibold text-green-700' : ''}>
+                                    {option}
+                                  </span>
+                                  {isCorrectOption && (
+                                    <span className="ml-2 text-xs text-green-600">(正确答案)</span>
+                                  )}
+                                  {isUserSelected && !isCorrectOption && (
+                                    <span className="ml-2 text-xs text-red-600">(您的答案)</span>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                      
+                      {/* 填空题答案显示 */}
+                      {question.type === 'fill' && (
+                        <div className="space-y-2">
+                          <div className="p-3 bg-gray-50 rounded border">
+                            <div className="text-sm text-gray-600 mb-1">您的答案：</div>
+                            <div className={isCorrect ? 'text-green-700 font-semibold' : 'text-red-700'}>
+                              {userAnswerArray[0] || '(未作答)'}
+                            </div>
+                          </div>
+                          <div className="p-3 bg-green-50 rounded border border-green-200">
+                            <div className="text-sm text-gray-600 mb-1">正确答案：</div>
+                            <div className="text-green-700 font-semibold">
+                              {correctAnswer[0] || '(无标准答案)'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 解析 */}
+                      {question.explanation && (
+                        <div className="p-3 bg-blue-50 rounded border border-blue-200">
+                          <div className="text-sm font-semibold text-blue-900 mb-1">解析：</div>
+                          <div className="text-sm text-blue-800">{question.explanation}</div>
+                        </div>
+                      )}
+                      
+                      {/* 得分情况 */}
+                      <div className="text-sm text-gray-600">
+                        得分：{isCorrect ? question.points : 0} / {question.points} 分
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+            
+            <div className="p-4 border-t">
+              <Button
+                onClick={() => setShowReview(false)}
+                className="w-full"
+              >
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
