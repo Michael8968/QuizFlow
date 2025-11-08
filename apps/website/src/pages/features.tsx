@@ -7,6 +7,14 @@ import {
   CreditCard,
   Users
 } from 'lucide-react'
+import questionImage from '@/assets/image/question.jpg'
+import questionVideo from '@/assets/video/question.mp4'
+import paperImage from '@/assets/image/paper.png'
+import paperVideo from '@/assets/video/paper.mp4'
+import answerImage from '@/assets/image/answer.png'
+import answerVideo from '@/assets/video/answer.mp4'
+import reportImage from '@/assets/image/report.png'
+import reportVideo from '@/assets/video/report.mp4'
 
 export function Features() {
   const features = [
@@ -20,6 +28,8 @@ export function Features() {
         '题目搜索和筛选功能',
         '题目版本管理和历史记录',
       ],
+      video: questionVideo,
+      image: questionImage,
     },
     {
       icon: Sparkles,
@@ -31,6 +41,8 @@ export function Features() {
         '一键生成多套试卷',
         '试卷预览和编辑',
       ],
+      video: paperVideo,
+      image: paperImage,
     },
     {
       icon: Smartphone,
@@ -42,6 +54,8 @@ export function Features() {
         '实时保存答题进度',
         '倒计时和自动提交功能',
       ],
+      video: answerVideo,
+      image: answerImage,
     },
     {
       icon: BarChart3,
@@ -53,6 +67,8 @@ export function Features() {
         '知识点掌握情况分析',
         '错题分析和改进建议',
       ],
+      video: reportVideo,
+      image: reportImage,
     },
     {
       icon: CreditCard,
@@ -128,8 +144,19 @@ export function Features() {
                   </Card>
                 </div>
                 <div className="flex-1">
-                  <div className="bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
-                    <p className="text-gray-400">功能演示截图/GIF</p>
+                  <div className="rounded-lg aspect-video overflow-hidden bg-gray-100">
+                    <video
+                      className="w-full h-full object-cover"
+                      poster={feature.image}
+                      controls={false}
+                      preload="metadata"
+                      loop
+                      muted
+                      autoPlay
+                    >
+                      <source src={feature.video} type="video/mp4" />
+                      您的浏览器不支持视频播放。
+                    </video>
                   </div>
                 </div>
               </div>
