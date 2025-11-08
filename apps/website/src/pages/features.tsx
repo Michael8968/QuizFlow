@@ -15,6 +15,10 @@ import answerImage from '@/assets/image/answer.png'
 import answerVideo from '@/assets/video/answer.mp4'
 import reportImage from '@/assets/image/report.png'
 import reportVideo from '@/assets/video/report.mp4'
+import subscriptionImage from '@/assets/image/subscription.jpg'
+import subscriptionVideo from '@/assets/video/subscription.mp4'
+import collaborationImage from '@/assets/image/collaboration.jpg'
+import collaborationVideo from '@/assets/video/collaboration.mp4'
 
 export function Features() {
   const features = [
@@ -80,6 +84,8 @@ export function Features() {
         '发票和账单管理',
         '使用量统计和提醒',
       ],
+      video: subscriptionVideo,
+      image: subscriptionImage,
     },
     {
       icon: Users,
@@ -91,6 +97,8 @@ export function Features() {
         '协作编辑和评论',
         '数据共享和同步',
       ],
+      video: collaborationVideo,
+      image: collaborationImage,
     },
   ]
 
