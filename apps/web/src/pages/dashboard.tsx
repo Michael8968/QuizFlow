@@ -81,21 +81,27 @@ export function Dashboard() {
   // 计算统计数据
   const stats = useMemo(() => {
     const questions = questionsData?.data || []
-    const papers = papersData || []
+    const allPapers = papersData || []
     const answers = allAnswers || []
     
-    // 计算总题目数
-    const totalQuestions = questions.length
+    // 权限过滤：只统计当前用户的试卷
+    const papers = user ? allPapers.filter(paper => paper.user_id === user.id) : []
+    
+    // 计算总题目数（只统计当前用户的题目）
+    const userQuestions = user ? questions.filter(q => q.user_id === user.id) : []
+    const totalQuestions = userQuestions.length
 
-    // 计算试卷数量
+    // 计算试卷数量（只统计当前用户的试卷）
     const totalPapers = papers.length
 
-    // 计算答卷数量
-    const totalAnswers = answers.length
+    // 计算答卷数量（只统计当前用户试卷的答卷）
+    const userPaperIds = papers.map(p => p.id)
+    const userAnswers = answers.filter(a => userPaperIds.includes(a.paper_id))
+    const totalAnswers = userAnswers.length
 
-    // 计算平均分（只计算已完成的答卷）
+    // 计算平均分（只计算已完成的答卷，且只统计当前用户试卷的答卷）
     // 过滤出已完成或已评分的答卷，并排除无效数据
-    const completedAnswers = answers.filter(a => 
+    const completedAnswers = userAnswers.filter(a => 
       (a.status === 'completed' || a.status === 'graded') &&
       a.total_score > 0 && // 总分必须大于0
       a.score >= 0 && // 得分不能为负数
@@ -118,15 +124,22 @@ export function Dashboard() {
       totalAnswers,
       averageScore: Math.round(averageScore * 10) / 10, // 保留一位小数
     }
-  }, [questionsData, papersData, allAnswers])
+  }, [questionsData, papersData, allAnswers, user])
 
   // 计算最近活动
   const recentActivities = useMemo<Activity[]>(() => {
     const activities: Activity[] = []
-    const papers = papersData || []
-    const questions = questionsData?.data || []
-    const answers = allAnswers || []
-    const reports = reportsData || []
+    const allPapers = papersData || []
+    const allQuestions = questionsData?.data || []
+    const allAnswersData = allAnswers || []
+    const allReports = reportsData || []
+
+    // 权限过滤：只显示当前用户的数据
+    const papers = user ? allPapers.filter(paper => paper.user_id === user.id) : []
+    const questions = user ? allQuestions.filter(q => q.user_id === user.id) : []
+    const userPaperIds = papers.map(p => p.id)
+    const answers = allAnswersData.filter(a => userPaperIds.includes(a.paper_id))
+    const reports = user ? allReports.filter(r => r.user_id === user.id) : []
 
     // 添加试卷活动
     papers.slice(0, 5).forEach(paper => {
@@ -185,7 +198,7 @@ export function Dashboard() {
     return activities
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 10)
-  }, [papersData, questionsData, allAnswers, reportsData])
+  }, [papersData, questionsData, allAnswers, reportsData, user])
 
   const isLoading = questionsLoading || papersLoading || answersLoading || reportsLoading
 

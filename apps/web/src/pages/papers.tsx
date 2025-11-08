@@ -13,6 +13,7 @@ import { PaperPreviewDialog } from '@/components/papers/paper-preview-dialog'
 import { QRCodeDialog } from '@/components/papers/qr-code-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { useAuthStore } from '@/stores/auth'
 
 // 扩展 Paper 类型以包含统计数据
 interface PaperWithStats extends Paper {
@@ -31,6 +32,7 @@ export function Papers() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
 
   // 获取试卷列表
   const { data, isLoading, error } = useQuery<PaperWithStats[]>({
@@ -141,15 +143,61 @@ export function Papers() {
 
   const papers = data || []
 
-  // 客户端筛选
+  // 计算使用量限制（根据套餐）
+  const usageLimits = useMemo(() => {
+    const plan = user?.plan || 'free'
+    
+    // 从环境变量读取套餐限制配置
+    const defaultLimits = {
+      free: { questions: 100, papers: 10, aiEnabled: false },
+      professional: { questions: 1000, papers: 100, aiEnabled: true },
+      institution: { questions: 10000, papers: 1000, aiEnabled: true },
+      ai_enhanced: { questions: 5000, papers: 500, aiEnabled: true },
+    }
+    
+    let limits = defaultLimits
+    
+    // 如果环境变量中有配置，则使用环境变量的配置
+    const envLimits = import.meta.env.VITE_PLAN_LIMITS
+    if (envLimits) {
+      try {
+        const parsedLimits = JSON.parse(envLimits)
+        limits = { ...defaultLimits, ...parsedLimits }
+      } catch (error) {
+        console.error('解析套餐限制配置失败，使用默认配置:', error)
+      }
+    }
+    
+    return limits[plan as keyof typeof limits] || limits.free
+  }, [user?.plan])
+
+  // 当前使用量（只统计当前用户的试卷）
+  const currentUsage = useMemo(() => {
+    if (!user) return { papers: 0 }
+    
+    const userPapers = papers.filter((paper: PaperWithStats) => paper.user_id === user.id)
+    return {
+      papers: userPapers.length,
+    }
+  }, [papers, user])
+
+  // 客户端筛选（包含权限过滤和搜索过滤）
   const filteredPapers = useMemo(() => {
+    if (!user) return []
+    
     return papers.filter((paper: PaperWithStats) => {
+      // 权限检查：只显示当前用户的试卷
+      const hasPermission = paper.user_id === user.id
+      if (!hasPermission) return false
+      
+      // 搜索过滤
       const matchesSearch = !searchTerm || 
         paper.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (paper.description && paper.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      
       return matchesSearch
     })
-  }, [papers, searchTerm])
+  }, [papers, searchTerm, user])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -183,11 +231,30 @@ export function Papers() {
   }
 
   const handleEdit = (paper: Paper) => {
+    // 权限检查：确保只能编辑自己的试卷
+    if (!user || paper.user_id !== user.id) {
+      toast({
+        title: '权限不足',
+        description: '您只能编辑自己的试卷',
+        variant: 'destructive',
+      })
+      return
+    }
     setEditingPaper(paper)
     setIsFormDialogOpen(true)
   }
 
   const handleDelete = (id: string) => {
+    // 权限检查：确保只能删除自己的试卷
+    const paper = papers.find(p => p.id === id)
+    if (!user || !paper || paper.user_id !== user.id) {
+      toast({
+        title: '权限不足',
+        description: '您只能删除自己的试卷',
+        variant: 'destructive',
+      })
+      return
+    }
     setDeletingPaperId(id)
     setIsConfirmDialogOpen(true)
   }
@@ -200,6 +267,29 @@ export function Papers() {
   }
 
   const handleCopy = (paper: Paper) => {
+    // 权限检查：确保只能复制自己的试卷
+    if (!user || paper.user_id !== user.id) {
+      toast({
+        title: '权限不足',
+        description: '您只能复制自己的试卷',
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    // 检查试卷数量限制
+    const paperLimit = usageLimits.papers
+    const currentPaperCount = currentUsage.papers
+    
+    if (currentPaperCount >= paperLimit) {
+      toast({
+        title: '复制失败',
+        description: `您的套餐最多允许创建 ${paperLimit} 份试卷，当前已有 ${currentPaperCount} 份。请升级套餐或删除部分试卷后再试。`,
+        variant: 'destructive',
+      })
+      return
+    }
+    
     copyMutation.mutate(paper)
   }
 
@@ -208,12 +298,37 @@ export function Papers() {
   }
 
   const handleViewReport = (paperId: string) => {
+    // 权限检查：确保只能查看自己试卷的报告
+    const paper = papers.find(p => p.id === paperId)
+    if (!user || !paper || paper.user_id !== user.id) {
+      toast({
+        title: '权限不足',
+        description: '您只能查看自己试卷的报告',
+        variant: 'destructive',
+      })
+      return
+    }
     // 导航到报告页面
     navigate(`/reports?paperId=${paperId}`)
   }
 
   const handleSubmit = async (paperData: any) => {
     try {
+      // 如果是创建新试卷，检查试卷数量限制
+      if (!editingPaper) {
+        const paperLimit = usageLimits.papers
+        const currentPaperCount = currentUsage.papers
+        
+        if (currentPaperCount >= paperLimit) {
+          toast({
+            title: '创建失败',
+            description: `您的套餐最多允许创建 ${paperLimit} 份试卷，当前已有 ${currentPaperCount} 份。请升级套餐或删除部分试卷后再试。`,
+            variant: 'destructive',
+          })
+          return
+        }
+      }
+      
       // 获取完整的题目对象
       const questionsResponse = await api.getQuestions({ limit: 1000 }) as { data?: Question[]; count?: number }
       const allQuestions = questionsResponse.data || []
@@ -396,36 +511,40 @@ export function Papers() {
                       <Eye className="mr-2 h-4 w-4" />
                       预览
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleEdit(paper)}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      编辑
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleCopy(paper)}
-                      disabled={copyMutation.isPending}
-                      title="复制试卷"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDelete(paper.id)}
-                      disabled={deleteMutation.isPending}
-                      title="删除试卷"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {user && paper.user_id === user.id && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleEdit(paper)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          编辑
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleCopy(paper)}
+                          disabled={copyMutation.isPending}
+                          title="复制试卷"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(paper.id)}
+                          disabled={deleteMutation.isPending}
+                          title="删除试卷"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
 
-                  {paper.answerCount !== undefined && paper.answerCount > 0 && (
+                  {user && paper.user_id === user.id && paper.answerCount !== undefined && paper.answerCount > 0 && (
                     <Button 
                       variant="ghost" 
                       size="sm" 

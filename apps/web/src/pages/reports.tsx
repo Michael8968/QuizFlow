@@ -9,6 +9,7 @@ import { api } from '@/lib/api'
 import { Paper, Answer, Report, Question } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
+import { useAuthStore } from '@/stores/auth'
 import * as XLSX from 'xlsx'
 
 // 扩展 Answer 类型以包含 time_spent
@@ -41,6 +42,7 @@ export function Reports() {
   const selectedPaperId = searchParams.get('paperId') || 'all'
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { user } = useAuthStore()
 
   // 获取试卷列表
   const { data: papersData, isLoading: papersLoading } = useQuery<Paper[]>({
@@ -51,13 +53,19 @@ export function Reports() {
     },
   })
 
-  // 获取所有试卷的答案
+  // 权限过滤：只显示当前用户的试卷
+  const userPapers = useMemo(() => {
+    if (!papersData || !user) return []
+    return papersData.filter(paper => paper.user_id === user.id)
+  }, [papersData, user])
+
+  // 获取所有试卷的答案（只获取当前用户试卷的答案）
   const { data: allAnswers, isLoading: answersLoading } = useQuery<AnswerWithTime[]>({
-    queryKey: ['answers', 'reports', papersData?.map(p => p.id).join(',')],
+    queryKey: ['answers', 'reports', userPapers.map(p => p.id).join(',')],
     queryFn: async () => {
-      if (!papersData || papersData.length === 0) return []
+      if (!userPapers || userPapers.length === 0) return []
       
-      const answersPromises = papersData.map(paper => 
+      const answersPromises = userPapers.map(paper => 
         api.getAnswers(paper.id)
           .then((response: any) => Array.isArray(response) ? response : [])
           .catch(() => [])
@@ -65,7 +73,7 @@ export function Reports() {
       const answersArrays = await Promise.all(answersPromises)
       return answersArrays.flat() as AnswerWithTime[]
     },
-    enabled: !!papersData && papersData.length > 0,
+    enabled: !!userPapers && userPapers.length > 0,
   })
 
   // 获取报告列表
@@ -85,18 +93,21 @@ export function Reports() {
     },
   })
 
-  // 根据选择的试卷过滤答案
+  // 根据选择的试卷过滤答案（只包含当前用户试卷的答案）
   const filteredAnswers = useMemo(() => {
     if (!allAnswers) return []
-    if (selectedPaperId === 'all') return allAnswers
-    return allAnswers.filter(a => a.paper_id === selectedPaperId)
-  }, [allAnswers, selectedPaperId])
+    const userPaperIds = userPapers.map(p => p.id)
+    const userAnswers = allAnswers.filter(a => userPaperIds.includes(a.paper_id))
+    
+    if (selectedPaperId === 'all') return userAnswers
+    return userAnswers.filter(a => a.paper_id === selectedPaperId)
+  }, [allAnswers, selectedPaperId, userPapers])
 
-  // 获取当前选择的试卷
+  // 获取当前选择的试卷（只从当前用户的试卷中选择）
   const selectedPaper = useMemo(() => {
-    if (!papersData || selectedPaperId === 'all') return null
-    return papersData.find(p => p.id === selectedPaperId) || null
-  }, [papersData, selectedPaperId])
+    if (!userPapers || selectedPaperId === 'all') return null
+    return userPapers.find(p => p.id === selectedPaperId) || null
+  }, [userPapers, selectedPaperId])
 
   // 计算汇总统计数据
   const summaryStats = useMemo(() => {
@@ -336,7 +347,7 @@ export function Reports() {
             '答题时长(分钟)',
           ],
           ...completedAnswers.map(answer => {
-            const paper = papersData?.find(p => p.id === answer.paper_id)
+            const paper = userPapers.find(p => p.id === answer.paper_id)
             const scoreRate = answer.total_score > 0 
               ? ((answer.score / answer.total_score) * 100).toFixed(1)
               : '0'
@@ -444,7 +455,7 @@ export function Reports() {
               className="w-[300px] px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">全部试卷</option>
-              {papersData?.filter(paper => paper.status === 'published').map((paper) => (
+              {userPapers.filter(paper => paper.status === 'published').map((paper) => (
                 <option key={paper.id} value={paper.id}>
                   {paper.title}
                 </option>
@@ -628,8 +639,8 @@ export function Reports() {
         <CardContent>
           {reportsData && reportsData.length > 0 ? (
             <div className="space-y-4">
-              {reportsData.map((report) => {
-                const paper = papersData?.find(p => p.id === report.paper_id)
+              {reportsData.filter(report => userPapers.some(p => p.id === report.paper_id)).map((report) => {
+                const paper = userPapers.find(p => p.id === report.paper_id)
                 return (
                   <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
