@@ -41,6 +41,7 @@ export function Settings() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isUpgrading, setIsUpgrading] = useState(false)
   
   // 通知设置状态
   const [notifications, setNotifications] = useState<NotificationSettings>({
@@ -394,6 +395,59 @@ export function Settings() {
     window.open(links[type], '_blank')
   }
 
+  // 升级到专业版
+  const handleUpgrade = async () => {
+    if (!user) {
+      toast({
+        title: '错误',
+        description: '未找到用户信息',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsUpgrading(true)
+    try {
+      // 调用 API 创建订阅
+      await api.createSubscription('professional')
+
+      // 更新 users 表中的 plan 字段
+      const { error: dbError } = await supabase
+        .from('users')
+        .update({
+          plan: 'professional',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      if (dbError) {
+        throw dbError
+      }
+
+      // 更新本地 store 中的用户信息
+      const updatedUser = {
+        ...user,
+        plan: 'professional' as const,
+        updated_at: new Date().toISOString(),
+      }
+      setUser(updatedUser)
+
+      toast({
+        title: '升级成功',
+        description: '您已成功升级到专业版，享受更多功能！',
+      })
+    } catch (error: any) {
+      console.error('升级失败:', error)
+      toast({
+        title: '升级失败',
+        description: error.message || '升级时出错，请稍后重试',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsUpgrading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -678,8 +732,20 @@ export function Settings() {
                 </div>
               </div>
               {user?.plan === 'free' && (
-                <Button className="w-full" variant="default">
-                  升级到专业版
+                <Button 
+                  className="w-full" 
+                  variant="default"
+                  onClick={handleUpgrade}
+                  disabled={isUpgrading}
+                >
+                  {isUpgrading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      升级中...
+                    </>
+                  ) : (
+                    '升级到专业版'
+                  )}
                 </Button>
               )}
             </CardContent>

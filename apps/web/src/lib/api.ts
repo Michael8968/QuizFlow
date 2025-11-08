@@ -178,6 +178,18 @@ class ApiClient {
       method: 'POST',
     })
   }
+
+  // 订阅相关
+  async getSubscription() {
+    return this.request('/subscriptions')
+  }
+
+  async createSubscription(plan: string) {
+    return this.request('/subscriptions', {
+      method: 'POST',
+      body: JSON.stringify({ plan }),
+    })
+  }
 }
 
 export const api = new ApiClient()

@@ -3,14 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Filter, Edit, Trash2, Eye, Loader2 } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Sparkles } from 'lucide-react'
 import { getQuestionTypeLabel, getDifficultyColor } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { Question } from '@/types'
 import { QuestionFormDialog } from '@/components/question-form-dialog'
 import { QuestionDetailDialog } from '@/components/question-detail-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { AiGenerateDialog } from '@/components/ai-generate-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/components/auth/auth-provider'
 
 export function Questions() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -18,11 +20,13 @@ export function Questions() {
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null)
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   // 获取题目列表
   const { data, isLoading, error } = useQuery<Question[]>({
@@ -103,6 +107,54 @@ export function Questions() {
     },
   })
 
+  // 批量创建题目（用于AI生成的题目）
+  const batchCreateMutation = useMutation({
+    mutationFn: async (questions: Question[]) => {
+      const results = []
+      for (const question of questions) {
+        try {
+          const result = await api.createQuestion({
+            type: question.type,
+            content: question.content,
+            options: question.options,
+            answer: question.answer,
+            explanation: question.explanation,
+            difficulty: question.difficulty,
+            points: question.points,
+            tags: question.tags,
+          })
+          results.push(result)
+        } catch (error) {
+          console.error('创建题目失败:', error)
+          throw error
+        }
+      }
+      return results
+    },
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ['questions'] })
+      toast({
+        title: '成功',
+        description: `成功保存 ${results.length} 道题目`,
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: '保存失败',
+        description: error.message || '保存题目失败，请重试',
+        variant: 'destructive',
+      })
+    },
+  })
+
+  // 处理AI生成的题目
+  const handleAiQuestionsGenerated = async (questions: Question[]) => {
+    if (questions.length === 0) {
+      return
+    }
+    await batchCreateMutation.mutateAsync(questions)
+  }
+
   const questions = data || []
 
   // 客户端筛选
@@ -165,10 +217,20 @@ export function Questions() {
             管理您的题目库，创建、编辑和组织题目
           </p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="mr-2 h-4 w-4" />
-          添加题目
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsAiDialogOpen(true)}
+            className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            AI 出题
+          </Button>
+          <Button onClick={handleAdd}>
+            <Plus className="mr-2 h-4 w-4" />
+            添加题目
+          </Button>
+        </div>
       </div>
 
       {/* 搜索和筛选 */}
@@ -349,6 +411,14 @@ export function Questions() {
         cancelText="取消"
         onConfirm={handleConfirmDelete}
         variant="destructive"
+      />
+
+      {/* AI 出题对话框 */}
+      <AiGenerateDialog
+        open={isAiDialogOpen}
+        onOpenChange={setIsAiDialogOpen}
+        onQuestionsGenerated={handleAiQuestionsGenerated}
+        userPlan={user?.plan}
       />
     </div>
   )
