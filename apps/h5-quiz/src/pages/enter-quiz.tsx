@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -62,7 +62,8 @@ function transformPaperToQuiz(paper: any): Quiz {
 
 export function EnterQuiz() {
   const navigate = useNavigate()
-  const { setQuiz } = useQuizStore()
+  const [searchParams] = useSearchParams()
+  const { setQuiz, setStudentInfo } = useQuizStore()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paperInfo, setPaperInfo] = useState<Quiz | null>(null)
@@ -81,6 +82,14 @@ export function EnterQuiz() {
 
   const quizCode = watch('quizCode')
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 从 URL 参数中读取 code 并填入表单
+  useEffect(() => {
+    const codeFromUrl = searchParams.get('code')
+    if (codeFromUrl) {
+      setValue('quizCode', codeFromUrl.trim())
+    }
+  }, [searchParams, setValue])
 
   // 当考试码变化时，尝试获取试卷信息（带防抖）
   useEffect(() => {
@@ -135,6 +144,7 @@ export function EnterQuiz() {
       }
 
       const quiz = transformPaperToQuiz(paper)
+      setStudentInfo(data.studentName, data.studentEmail || undefined)
       setQuiz(quiz)
       navigate(`/quiz/${quiz.id}`)
     } catch (err) {

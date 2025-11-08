@@ -8,28 +8,194 @@ import {
   Users, 
   Plus,
   TrendingUp,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { Question, Paper, Answer, Report } from '@/types'
+import { formatTimeAgo } from '@/lib/utils'
+import { useMemo } from 'react'
+
+interface Activity {
+  id: string
+  type: 'paper' | 'question' | 'answer' | 'report'
+  title: string
+  time: string
+  status: 'published' | 'completed' | 'new'
+  createdAt: string
+}
 
 export function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // 模拟数据 - 实际项目中应该从 API 获取
-  const stats = {
-    totalQuestions: 156,
-    totalPapers: 23,
-    totalAnswers: 89,
-    averageScore: 78.5,
-  }
+  // 获取题目列表
+  const { data: questionsData, isLoading: questionsLoading } = useQuery<{ data?: Question[]; count?: number }>({
+    queryKey: ['questions', 'dashboard'],
+    queryFn: async () => {
+      return await api.getQuestions({ limit: 1000 }) as { data?: Question[]; count?: number }
+    },
+  })
 
-  const recentActivities = [
-    { id: 1, type: 'paper', title: '数学期中考试', time: '2小时前', status: 'published' },
-    { id: 2, type: 'question', title: '添加了10道新题目', time: '4小时前', status: 'completed' },
-    { id: 3, type: 'answer', title: '收到5份答卷', time: '6小时前', status: 'new' },
-    { id: 4, type: 'report', title: '生成了成绩报告', time: '1天前', status: 'completed' },
-  ]
+  // 获取试卷列表
+  const { data: papersData, isLoading: papersLoading } = useQuery<Paper[]>({
+    queryKey: ['papers', 'dashboard'],
+    queryFn: async () => {
+      const response = await api.getPapers() as Paper[]
+      return response || []
+    },
+  })
+
+  // 获取所有试卷的答案
+  const { data: allAnswers, isLoading: answersLoading } = useQuery<Answer[]>({
+    queryKey: ['answers', 'dashboard', papersData?.map(p => p.id).join(',')],
+    queryFn: async () => {
+      if (!papersData || papersData.length === 0) return []
+      
+      // 获取所有试卷的答案
+      const answersPromises = papersData.map(paper => 
+        api.getAnswers(paper.id)
+          .then((response: any) => {
+            // 确保返回的是数组
+            return Array.isArray(response) ? response : []
+          })
+          .catch(() => []) // 如果获取失败，返回空数组
+      )
+      const answersArrays = await Promise.all(answersPromises)
+      return answersArrays.flat() as Answer[]
+    },
+    enabled: !!papersData && papersData.length > 0,
+  })
+
+  // 获取报告列表
+  const { data: reportsData, isLoading: reportsLoading } = useQuery<Report[]>({
+    queryKey: ['reports', 'dashboard'],
+    queryFn: async () => {
+      const response = await api.getReports() as Report[]
+      return response || []
+    },
+  })
+
+  // 计算统计数据
+  const stats = useMemo(() => {
+    const questions = questionsData?.data || []
+    const papers = papersData || []
+    const answers = allAnswers || []
+    
+    // 计算总题目数
+    const totalQuestions = questions.length
+
+    // 计算试卷数量
+    const totalPapers = papers.length
+
+    // 计算答卷数量
+    const totalAnswers = answers.length
+
+    // 计算平均分（只计算已完成的答卷）
+    // 过滤出已完成或已评分的答卷，并排除无效数据
+    const completedAnswers = answers.filter(a => 
+      (a.status === 'completed' || a.status === 'graded') &&
+      a.total_score > 0 && // 总分必须大于0
+      a.score >= 0 && // 得分不能为负数
+      isFinite(a.score) && // 得分必须是有效数字
+      isFinite(a.total_score) // 总分必须是有效数字
+    )
+    console.log( 'completedAnswers', completedAnswers)
+    
+    const averageScore = completedAnswers.length > 0
+      ? completedAnswers.reduce((sum, a) => {
+          // 计算得分率（百分比），确保在 0-100% 之间
+          const scoreRate = Math.min(100, Math.max(0, (a.score / a.total_score) * 100))
+          return sum + scoreRate
+        }, 0) / completedAnswers.length
+      : 0
+
+    return {
+      totalQuestions,
+      totalPapers,
+      totalAnswers,
+      averageScore: Math.round(averageScore * 10) / 10, // 保留一位小数
+    }
+  }, [questionsData, papersData, allAnswers])
+
+  // 计算最近活动
+  const recentActivities = useMemo<Activity[]>(() => {
+    const activities: Activity[] = []
+    const papers = papersData || []
+    const questions = questionsData?.data || []
+    const answers = allAnswers || []
+    const reports = reportsData || []
+
+    // 添加试卷活动
+    papers.slice(0, 5).forEach(paper => {
+      activities.push({
+        id: `paper-${paper.id}`,
+        type: 'paper',
+        title: paper.title,
+        time: formatTimeAgo(paper.created_at),
+        status: paper.status === 'published' ? 'published' : 'completed',
+        createdAt: paper.created_at,
+      })
+    })
+
+    // 添加题目活动（最近创建的）
+    questions.slice(0, 3).forEach(question => {
+      activities.push({
+        id: `question-${question.id}`,
+        type: 'question',
+        title: `添加了新题目：${question.content.substring(0, 30)}${question.content.length > 30 ? '...' : ''}`,
+        time: formatTimeAgo(question.created_at),
+        status: 'completed',
+        createdAt: question.created_at,
+      })
+    })
+
+    // 添加答卷活动（最近提交的）
+    answers
+      .filter(a => a.status === 'completed' || a.status === 'graded')
+      .slice(0, 3)
+      .forEach(answer => {
+        const paper = papers.find(p => p.id === answer.paper_id)
+        activities.push({
+          id: `answer-${answer.id}`,
+          type: 'answer',
+          title: `收到答卷：${answer.student_name || '匿名'} - ${paper?.title || '未知试卷'}`,
+          time: formatTimeAgo(answer.submitted_at || answer.created_at),
+          status: 'new',
+          createdAt: answer.submitted_at || answer.created_at,
+        })
+      })
+
+    // 添加报告活动
+    reports.slice(0, 2).forEach(report => {
+      const paper = papers.find(p => p.id === report.paper_id)
+      activities.push({
+        id: `report-${report.id}`,
+        type: 'report',
+        title: `生成了成绩报告：${paper?.title || '未知试卷'}`,
+        time: formatTimeAgo(report.created_at),
+        status: 'completed',
+        createdAt: report.created_at,
+      })
+    })
+
+    // 按创建时间排序，取最近10条
+    return activities
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 10)
+  }, [papersData, questionsData, allAnswers, reportsData])
+
+  const isLoading = questionsLoading || papersLoading || answersLoading || reportsLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -53,7 +219,7 @@ export function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalQuestions}</div>
             <p className="text-xs text-muted-foreground">
-              +12 比上周
+              总题目数
             </p>
           </CardContent>
         </Card>
@@ -66,7 +232,7 @@ export function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalPapers}</div>
             <p className="text-xs text-muted-foreground">
-              +3 比上周
+              总试卷数
             </p>
           </CardContent>
         </Card>
@@ -79,7 +245,7 @@ export function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalAnswers}</div>
             <p className="text-xs text-muted-foreground">
-              +8 比上周
+              总答卷数
             </p>
           </CardContent>
         </Card>
@@ -90,9 +256,9 @@ export function Dashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageScore}%</div>
+            <div className="text-2xl font-bold">{stats.averageScore.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
-              +2.1% 比上周
+              平均得分率
             </p>
           </CardContent>
         </Card>
@@ -143,7 +309,10 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivities.map((activity) => (
+              {recentActivities.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">暂无活动记录</p>
+              ) : (
+                recentActivities.map((activity) => (
                 <div key={activity.id} className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
                     {activity.type === 'paper' && <FileText className="h-4 w-4 text-blue-500" />}
@@ -171,7 +340,8 @@ export function Dashboard() {
                     </span>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </CardContent>
         </Card>

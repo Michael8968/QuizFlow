@@ -1,16 +1,149 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuizStore } from '@/stores/quiz'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Clock, CheckCircle, Circle } from 'lucide-react'
+import { api } from '@/lib/api'
 
 export function QuizPage() {
   const { quizId } = useParams()
   const navigate = useNavigate()
-  const { quiz, currentQuestionIndex, setCurrentQuestionIndex, answers, setAnswer } = useQuizStore()
+  const { 
+    quiz, 
+    currentQuestionIndex, 
+    setCurrentQuestionIndex, 
+    answers, 
+    setAnswer, 
+    studentName, 
+    studentEmail, 
+    startedAt,
+    setLoading,
+    setSubmitted,
+    setError
+  } = useQuizStore()
   const [timeLeft, setTimeLeft] = useState(quiz?.settings?.time_limit ? quiz.settings.time_limit * 60 : 0)
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const handleSubmitRef = useRef<() => Promise<void>>()
+
+  // 比较答案是否相等（处理数组和字符串）
+  const isAnswerCorrect = useCallback((question: any, userAnswers: string | string[]): boolean => {
+    if (!question.answer) return false
+    
+    const correctAnswer = Array.isArray(question.answer) ? question.answer : [question.answer]
+    const userAnswerArray = Array.isArray(userAnswers) ? userAnswers : [userAnswers]
+    
+    // 对数组进行排序后比较（用于多选题）
+    if (question.type === 'multiple') {
+      const sortedCorrect = [...correctAnswer].sort()
+      const sortedUser = [...userAnswerArray].sort()
+      return sortedCorrect.length === sortedUser.length && 
+             sortedCorrect.every((val, idx) => val === sortedUser[idx])
+    }
+    
+    // 单选题和填空题
+    if (question.type === 'single') {
+      return correctAnswer[0] === userAnswerArray[0]
+    }
+    
+    // 填空题：简单比较（可以后续优化为模糊匹配）
+    if (question.type === 'fill') {
+      const userText = (userAnswerArray[0] || '').trim().toLowerCase()
+      const correctText = (correctAnswer[0] || '').trim().toLowerCase()
+      return userText === correctText
+    }
+    
+    return false
+  }, [])
+
+  const handleSubmit = useCallback(async () => {
+    if (!quiz || currentQuestionIndex === null) {
+      return
+    }
+
+    // 防止重复提交
+    if (isSubmitting) {
+      return
+    }
+
+    setIsSubmitting(true)
+    setLoading(true)
+    setError(null)
+
+    try {
+      // 保存当前题目的答案
+      const question = quiz.questions[currentQuestionIndex]
+      setAnswer(question.id, selectedAnswers)
+
+      // 获取包含当前题目答案的所有答案
+      const allAnswers = {
+        ...answers,
+        [question.id]: selectedAnswers
+      }
+
+      // 计算答题用时（秒）
+      const startedTime = startedAt ? new Date(startedAt).getTime() : Date.now()
+      const timeSpent = Math.floor((Date.now() - startedTime) / 1000)
+
+      // 计算总分和实际得分（使用包含当前题目答案的 allAnswers）
+      const totalScore = quiz.questions.reduce((sum, q) => sum + q.points, 0)
+      let actualScore = 0
+      quiz.questions.forEach(q => {
+        const userAnswers = allAnswers[q.id]
+        if (userAnswers !== undefined && userAnswers !== null) {
+          if (q.type === 'single' || q.type === 'multiple') {
+            if (isAnswerCorrect(q, userAnswers)) {
+              actualScore += q.points
+            }
+          } else if (q.type === 'fill') {
+            const answerArray = Array.isArray(userAnswers) ? userAnswers : [userAnswers]
+            if (answerArray.length > 0 && answerArray[0] && answerArray[0].trim()) {
+              if (isAnswerCorrect(q, userAnswers)) {
+                actualScore += q.points
+              }
+            }
+          }
+        }
+      })
+
+      // 准备提交数据
+      const answerData = {
+        paper_id: quiz.id,
+        student_name: studentName,
+        student_email: studentEmail,
+        responses: allAnswers,
+        score: actualScore, // 自动计算的分数
+        total_score: totalScore,
+        status: 'completed',
+        started_at: startedAt || new Date().toISOString(),
+        submitted_at: new Date().toISOString(),
+        time_spent: timeSpent,
+      }
+
+      // 调用 API 提交答案
+      await api.submitAnswer(answerData)
+
+      // 标记为已提交
+      setSubmitted(true)
+
+      // 跳转到结果页面
+      navigate(`/result/${quizId}`)
+    } catch (error) {
+      console.error('提交答案失败:', error)
+      setError(error instanceof Error ? error.message : '提交答案失败，请稍后重试')
+      // 即使提交失败，也跳转到结果页面（显示错误信息）
+      navigate(`/result/${quizId}`)
+    } finally {
+      setIsSubmitting(false)
+      setLoading(false)
+    }
+  }, [quiz, currentQuestionIndex, selectedAnswers, answers, studentName, studentEmail, startedAt, isSubmitting, quizId, navigate, setAnswer, setLoading, setSubmitted, setError, isAnswerCorrect])
+
+  // 更新 ref
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit
+  }, [handleSubmit])
 
   useEffect(() => {
     if (!quiz) {
@@ -21,7 +154,8 @@ export function QuizPage() {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleSubmit()
+          // 使用 ref 来调用，避免依赖问题
+          handleSubmitRef.current?.()
           return 0
         }
         return prev - 1
@@ -56,14 +190,6 @@ export function QuizPage() {
         handleSubmit()
       }
     }
-  }
-
-  const handleSubmit = () => {
-    if (quiz && currentQuestionIndex !== null) {
-      const question = quiz.questions[currentQuestionIndex]
-      setAnswer(question.id, selectedAnswers)
-    }
-    navigate(`/result/${quizId}`)
   }
 
   if (!quiz || currentQuestionIndex === null) {
@@ -181,9 +307,9 @@ export function QuizPage() {
           
           <Button
             onClick={currentQuestionIndex === quiz.questions.length - 1 ? handleSubmit : handleNext}
-            disabled={selectedAnswers.length === 0}
+            disabled={selectedAnswers.length === 0 || isSubmitting}
           >
-            {currentQuestionIndex === quiz.questions.length - 1 ? '提交答案' : '下一题'}
+            {isSubmitting ? '提交中...' : currentQuestionIndex === quiz.questions.length - 1 ? '提交答案' : '下一题'}
           </Button>
         </div>
       </div>

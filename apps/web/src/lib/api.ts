@@ -163,6 +163,11 @@ class ApiClient {
     })
   }
 
+  // 答卷相关
+  async getAnswers(paperId: string) {
+    return this.request(`/answers/${paperId}`)
+  }
+
   // 报告相关
   async getReports() {
     return this.request('/reports')

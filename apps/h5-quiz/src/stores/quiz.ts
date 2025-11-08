@@ -10,6 +10,7 @@ interface QuizStore extends QuizState {
   setSubmitted: (submitted: boolean) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
+  setStudentInfo: (name: string, email?: string) => void
   reset: () => void
 }
 
@@ -21,6 +22,9 @@ const initialState: QuizState = {
   isSubmitted: false,
   isLoading: false,
   error: null,
+  studentName: undefined,
+  studentEmail: undefined,
+  startedAt: undefined,
 }
 
 export const useQuizStore = create<QuizStore>()(
@@ -34,7 +38,13 @@ export const useQuizStore = create<QuizStore>()(
         currentQuestionIndex: 0,
         answers: {},
         isSubmitted: false,
-        error: null
+        error: null,
+        startedAt: new Date().toISOString()
+      }),
+      
+      setStudentInfo: (name, email) => set({ 
+        studentName: name,
+        studentEmail: email || undefined
       }),
       
       setCurrentQuestionIndex: (index) => set({ currentQuestionIndex: index }),
@@ -64,6 +74,9 @@ export const useQuizStore = create<QuizStore>()(
         answers: state.answers,
         timeRemaining: state.timeRemaining,
         isSubmitted: state.isSubmitted,
+        studentName: state.studentName,
+        studentEmail: state.studentEmail,
+        startedAt: state.startedAt,
       }),
     }
   )

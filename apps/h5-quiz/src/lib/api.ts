@@ -53,9 +53,9 @@ class ApiClient {
     return this.request(`/papers/public/${code}`)
   }
 
-  // 提交答卷
+  // 提交答卷（公开端点）
   async submitAnswer(answerData: any) {
-    return this.request('/answers', {
+    return this.request('/answers/public', {
       method: 'POST',
       body: JSON.stringify(answerData),
     })

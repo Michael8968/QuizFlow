@@ -1,9 +1,9 @@
 import { createContext, useContext, ReactNode } from 'react'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore, AuthState } from '@/stores/auth'
 
 interface AuthContextType {
-  user: ReturnType<typeof useAuthStore>['user']
-  isLoading: boolean
+  user: AuthState['user']
+  isLoading: AuthState['isLoading']
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)

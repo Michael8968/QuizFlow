@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { User } from '@/types'
 
-interface AuthState {
+export interface AuthState {
   user: User | null
   token: string | null
   isLoading: boolean

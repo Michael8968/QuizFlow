@@ -49,7 +49,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       />
     )
   }
-)
+) as React.ForwardRefExoticComponent<
+  ButtonProps & React.RefAttributes<HTMLButtonElement>
+>
+
 Button.displayName = 'Button'
 
 export { Button, buttonVariants }

@@ -47,4 +47,7 @@ export interface QuizState {
   isSubmitted: boolean
   isLoading: boolean
   error: string | null
+  studentName?: string
+  studentEmail?: string
+  startedAt?: string
 }
