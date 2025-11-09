@@ -68,29 +68,235 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ### 3. 后端部署 (Render)
 
-#### 3.1 创建 Render 服务
-1. 访问 [Render Dashboard](https://dashboard.render.com)
-2. 点击 "New +" -> "Web Service"
-3. 连接 GitHub 仓库
+#### 3.1 注册和登录 Render
 
-#### 3.2 配置服务设置
-```yaml
-Name: quizflow-api
-Environment: Node
-Build Command: pnpm install && pnpm build:api
-Start Command: pnpm start:api
+1. **访问 Render 官网**
+   - 打开 [https://dashboard.render.com](https://dashboard.render.com)
+   - 点击右上角 "Get Started for Free" 或 "Sign Up"
+
+2. **注册账号**
+   - 可以使用 GitHub 账号直接登录（推荐）
+   - 或使用邮箱注册
+
+3. **验证邮箱**（如果使用邮箱注册）
+   - 检查邮箱中的验证链接并点击确认
+
+#### 3.2 创建 Web Service
+
+1. **进入 Dashboard**
+   - 登录后，点击左侧菜单的 "Dashboard"
+   - 点击右上角的 "New +" 按钮
+   - 选择 "Web Service"
+
+2. **连接 GitHub 仓库**
+   - 如果是第一次使用，需要授权 Render 访问 GitHub
+   - 点击 "Connect account" 并授权
+   - 选择你的 GitHub 仓库（QuizFlow）
+   - 点击 "Connect"
+
+3. **配置服务基本信息**
+   ```
+   Name: quizflow-api
+   Region: 选择离你最近的区域（如 Singapore）
+   Branch: main（或你的主分支）
+   Root Directory: （留空，使用根目录）
+   ```
+
+#### 3.3 配置构建和启动命令
+
+在 "Build & Deploy" 部分配置：
+
+**Environment（环境）**
+- 选择 `Node`
+
+**Build Command（构建命令）**
+```bash
+cd apps/api && pnpm install && pnpm build
+```
+或者如果使用根目录的 pnpm：
+```bash
+pnpm install && pnpm build:api
 ```
 
-#### 3.3 设置环境变量
+**Start Command（启动命令）**
+```bash
+cd apps/api && node dist/main.js
+```
+或者：
+```bash
+cd apps/api && pnpm start:prod
+```
+
+**注意**：Render 会自动设置 `PORT` 环境变量，你的应用应该使用 `process.env.PORT` 或 `$PORT`。你的代码已经通过 `configService.get('PORT', 3001)` 支持这个。
+
+#### 3.4 设置环境变量
+
+在 "Environment" 部分，点击 "Add Environment Variable" 添加以下变量：
+
+**必需的环境变量：**
 ```env
 NODE_ENV=production
-PORT=3001
 SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-OPENAI_API_KEY=your_openai_api_key
 JWT_SECRET=your_jwt_secret
+```
+
+**可选的环境变量：**
+```env
+OPENAI_API_KEY=your_openai_api_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 ```
+
+**重要提示：**
+- `PORT` 变量不需要手动设置，Render 会自动提供
+- 所有敏感信息（API 密钥、密钥等）都应该通过环境变量设置，不要硬编码在代码中
+- 环境变量设置后，服务会自动重新部署
+
+#### 3.5 配置 CORS（重要）
+
+由于你的 API 需要被前端调用，需要更新 CORS 配置。在 `apps/api/src/main.ts` 中，确保生产环境的 CORS 配置包含你的前端域名：
+
+```typescript
+app.enableCors({
+  origin: [
+    'http://localhost:3000', // 开发环境
+    'http://localhost:3002', // 开发环境
+    'https://your-frontend-domain.vercel.app', // 生产环境前端
+    'https://your-h5-domain.vercel.app', // 生产环境 H5
+  ],
+  credentials: true,
+});
+```
+
+或者使用环境变量动态配置：
+```typescript
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:3002',
+];
+
+app.enableCors({
+  origin: allowedOrigins,
+  credentials: true,
+});
+```
+
+然后在 Render 环境变量中添加：
+```env
+ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-h5.vercel.app
+```
+
+#### 3.6 部署和监控
+
+1. **首次部署**
+   - 配置完成后，点击 "Create Web Service"
+   - Render 会自动开始构建和部署
+   - 可以在 "Events" 标签页查看部署进度
+
+2. **查看日志**
+   - 点击服务名称进入详情页
+   - 在 "Logs" 标签页查看实时日志
+   - 可以筛选构建日志或运行时日志
+
+3. **监控服务状态**
+   - Dashboard 显示服务状态（Live、Building、Failed 等）
+   - 绿色表示服务正常运行
+   - 点击服务可以查看详细信息
+
+4. **获取服务 URL**
+   - 部署成功后，Render 会提供一个 URL
+   - 格式：`https://quizflow-api.onrender.com`
+   - 这个 URL 就是你的 API 地址
+
+#### 3.7 自动部署配置
+
+Render 默认会在以下情况自动部署：
+- 推送到连接的 Git 分支（通常是 main）
+- 手动触发部署（点击 "Manual Deploy"）
+
+**配置自动部署：**
+- 在服务设置中，确保 "Auto-Deploy" 已启用
+- 可以选择部署特定分支或所有分支
+
+#### 3.8 自定义域名（可选）
+
+1. **添加自定义域名**
+   - 在服务设置中，点击 "Settings"
+   - 滚动到 "Custom Domains" 部分
+   - 点击 "Add Custom Domain"
+   - 输入你的域名（如 `api.yourdomain.com`）
+
+2. **配置 DNS**
+   - Render 会提供 DNS 配置说明
+   - 在你的域名提供商处添加 CNAME 记录
+   - 等待 DNS 传播（通常几分钟到几小时）
+
+#### 3.9 服务计划选择
+
+**免费计划（Free Tier）：**
+- 适合开发和测试
+- 服务在 15 分钟无活动后会休眠
+- 首次请求可能需要几秒钟唤醒
+- 每月有使用限制
+
+**付费计划（Starter/Professional）：**
+- 服务始终运行，不会休眠
+- 更好的性能
+- 更多资源
+- 适合生产环境
+
+#### 3.10 常见问题排查
+
+**问题 1：构建失败**
+- 检查构建命令是否正确
+- 查看构建日志中的错误信息
+- 确保所有依赖都在 `package.json` 中
+- 检查 Node.js 版本是否兼容（项目要求 >= 20.0.0）
+
+**问题 2：服务启动失败**
+- 检查启动命令是否正确
+- 确保 `dist/main.js` 文件存在（构建成功）
+- 查看运行时日志
+- 检查环境变量是否都已设置
+
+**问题 3：端口错误**
+- Render 会自动设置 `PORT` 环境变量
+- 确保代码使用 `process.env.PORT` 而不是硬编码端口
+- 你的代码已经正确配置：`configService.get('PORT', 3001)`
+
+**问题 4：CORS 错误**
+- 检查前端域名是否在 CORS 允许列表中
+- 更新 `main.ts` 中的 CORS 配置
+- 确保 `credentials: true` 已设置
+
+**问题 5：环境变量未生效**
+- 环境变量修改后需要重新部署
+- 检查变量名是否正确（区分大小写）
+- 确保没有多余的空格
+
+**问题 6：服务休眠（免费计划）**
+- 这是免费计划的正常行为
+- 首次请求会唤醒服务（可能需要几秒）
+- 考虑升级到付费计划以避免休眠
+
+#### 3.11 性能优化建议
+
+1. **启用健康检查**
+   - 在服务设置中添加健康检查路径
+   - 例如：`/api/health`
+   - Render 会定期检查服务状态
+
+2. **配置环境变量缓存**
+   - Render 会自动缓存构建
+   - 确保 `node_modules` 在 `.gitignore` 中
+
+3. **监控资源使用**
+   - 在 Dashboard 查看 CPU 和内存使用情况
+   - 如果资源不足，考虑升级计划
+
+4. **设置部署通知**
+   - 在服务设置中配置通知
+   - 可以发送邮件或 Slack 通知
 
 ### 4. 数据库部署 (Supabase)
 

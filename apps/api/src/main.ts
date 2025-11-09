@@ -15,11 +15,28 @@ async function bootstrap() {
   app.use(compression());
 
   // CORS 配置
+  const allowedOrigins = configService
+    .get<string>('ALLOWED_ORIGINS', '')
+    .split(',')
+    .filter((origin) => origin.trim())
+    .concat([
+      'http://localhost:3000', // Web 前端（开发环境）
+      'http://localhost:3002', // H5 答卷（开发环境）
+    ]);
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000', // Web 前端
-      'http://localhost:3002', // H5 答卷
-    ],
+    origin: (origin, callback) => {
+      // 允许没有 origin 的请求（如移动应用、Postman 等）
+      if (!origin) {
+        return callback(null, true);
+      }
+      // 检查 origin 是否在允许列表中
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
 
