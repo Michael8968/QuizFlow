@@ -51,16 +51,16 @@ QuizFlow/
 
 ### 环境要求
 - Node.js 18+
-- pnpm
+- Yarn
 - PostgreSQL (或使用 Supabase)
 
 ### 安装依赖
 ```bash
 # 标准安装（如果遇到 puppeteer 网络超时，会自动跳过脚本）
-pnpm install
+yarn install
 
 # 如果上述命令失败，使用以下命令跳过所有 postinstall 脚本
-pnpm install --ignore-scripts
+yarn install --ignore-scripts
 ```
 
 > **注意**: 由于 puppeteer 安装时需要从 Google 服务器下载 Chromium，可能遇到网络超时问题。项目已配置跳过 Chromium 自动下载。
@@ -73,12 +73,12 @@ pnpm install --ignore-scripts
 ### 启动开发环境
 ```bash
 # 启动所有服务
-pnpm dev
+yarn dev
 
 # 或分别启动
-pnpm dev:web      # 教师端
-pnpm dev:h5       # H5 答卷
-pnpm dev:api      # 后端 API
+yarn dev:web      # 教师端
+yarn dev:h5       # H5 答卷
+yarn dev:api      # 后端 API
 ```
 
 ## 📋 功能模块

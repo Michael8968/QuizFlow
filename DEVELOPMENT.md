@@ -4,17 +4,14 @@
 
 ### 环境要求
 - Node.js 18+
-- pnpm 8+
+- Yarn
 - PostgreSQL (或使用 Supabase)
 - Git
 
 ### 安装依赖
 ```bash
-# 安装根目录依赖
-pnpm install
-
-# 安装所有子项目依赖
-pnpm install --recursive
+# 安装所有依赖（包括子项目）
+yarn install
 ```
 
 ### 环境配置
@@ -35,12 +32,12 @@ cp env.example .env
 ### 启动开发环境
 ```bash
 # 启动所有服务
-pnpm dev
+yarn dev
 
 # 或分别启动
-pnpm dev:web      # 教师端 (http://localhost:3000)
-pnpm dev:h5       # H5 答卷 (http://localhost:3002)
-pnpm dev:api      # 后端 API (http://localhost:3001)
+yarn dev:web      # 教师端 (http://localhost:3000)
+yarn dev:h5       # H5 答卷 (http://localhost:3002)
+yarn dev:api      # 后端 API (http://localhost:3001)
 ```
 
 ## 📁 项目结构
@@ -88,37 +85,37 @@ QuizFlow/
 ### 代码格式化
 ```bash
 # 格式化所有代码
-pnpm format
+yarn format
 
 # 格式化特定项目
-pnpm --filter web format
+yarn workspace web format
 ```
 
 ### 代码检查
 ```bash
 # 检查所有代码
-pnpm lint
+yarn lint
 
 # 检查特定项目
-pnpm --filter web lint
+yarn workspace web lint
 ```
 
 ### 类型检查
 ```bash
 # 检查所有类型
-pnpm type-check
+yarn type-check
 
 # 检查特定项目
-pnpm --filter web type-check
+yarn workspace web type-check
 ```
 
 ### 测试
 ```bash
 # 运行所有测试
-pnpm test
+yarn test
 
 # 运行特定项目测试
-pnpm --filter api test
+yarn workspace api test
 ```
 
 ## 🗄️ 数据库管理
@@ -130,32 +127,32 @@ pnpm --filter api test
 ### 数据库迁移
 ```bash
 # 生成迁移文件
-pnpm db:generate
+yarn db:generate
 
 # 运行迁移
-pnpm db:migrate
+yarn db:migrate
 
 # 回滚迁移
-pnpm db:rollback
+yarn db:rollback
 ```
 
 ## 🚀 部署
 
 ### 前端部署 (Vercel)
 1. 连接 GitHub 仓库到 Vercel
-2. 配置构建命令：`pnpm build:web`
+2. 配置构建命令：`yarn build:web`
 3. 配置输出目录：`apps/web/dist`
 4. 设置环境变量
 
 ### 后端部署 (Render)
 1. 连接 GitHub 仓库到 Render
-2. 配置构建命令：`pnpm build:api`
-3. 配置启动命令：`pnpm start:api`
+2. 配置构建命令：`yarn build:api`
+3. 配置启动命令：`yarn start:api`
 4. 设置环境变量
 
 ### H5 答卷部署 (Vercel)
 1. 创建单独的 Vercel 项目
-2. 配置构建命令：`pnpm build:h5`
+2. 配置构建命令：`yarn build:h5`
 3. 配置输出目录：`apps/h5-quiz/dist`
 
 ## 🔧 环境变量
@@ -205,11 +202,11 @@ chore: 构建过程或辅助工具的变动
 ### 1. 依赖安装失败
 ```bash
 # 清理缓存
-pnpm store prune
+yarn cache clean
 
 # 重新安装
 rm -rf node_modules
-pnpm install
+yarn install
 ```
 
 ### 2. 端口冲突

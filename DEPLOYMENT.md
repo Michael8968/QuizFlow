@@ -28,9 +28,9 @@
 #### 1.2 配置构建设置
 ```json
 {
-  "buildCommand": "pnpm build:web",
+  "buildCommand": "yarn build:web",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "pnpm install",
+  "installCommand": "yarn install",
   "rootDirectory": "."
 }
 ```
@@ -52,9 +52,9 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 #### 2.2 配置构建设置
 ```json
 {
-  "buildCommand": "pnpm build:h5",
+  "buildCommand": "yarn build:h5",
   "outputDirectory": "apps/h5-quiz/dist",
-  "installCommand": "pnpm install",
+  "installCommand": "yarn install",
   "rootDirectory": "."
 }
 ```
@@ -111,11 +111,11 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 **Build Command（构建命令）**
 ```bash
-cd apps/api && pnpm install && pnpm build
+cd apps/api && yarn install && yarn build
 ```
-或者如果使用根目录的 pnpm：
+或者如果使用根目录的 yarn：
 ```bash
-pnpm install && pnpm build:api
+yarn install && yarn build:api
 ```
 
 **Start Command（启动命令）**
@@ -124,7 +124,7 @@ cd apps/api && node dist/main.js
 ```
 或者：
 ```bash
-cd apps/api && pnpm start:prod
+cd apps/api && yarn start:prod
 ```
 
 **注意**：Render 会自动设置 `PORT` 环境变量，你的应用应该使用 `process.env.PORT` 或 `$PORT`。你的代码已经通过 `configService.get('PORT', 3001)` 支持这个。
@@ -374,9 +374,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm install -g pnpm
-      - run: pnpm install
-      - run: pnpm build:web
+      - run: npm install -g yarn
+      - run: yarn install
+      - run: yarn build:web
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
@@ -391,9 +391,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm install -g pnpm
-      - run: pnpm install
-      - run: pnpm build:api
+      - run: npm install -g yarn
+      - run: yarn install
+      - run: yarn build:api
       - name: Deploy to Render
         uses: johnbeynon/render-deploy-action@v0.0.8
         with:
@@ -441,13 +441,13 @@ npm install @sentry/react @sentry/node
 ### 1. 构建失败
 ```bash
 # 检查依赖
-pnpm install
+yarn install
 
 # 检查类型错误
-pnpm type-check
+yarn type-check
 
 # 检查代码格式
-pnpm lint
+yarn lint
 ```
 
 ### 2. 部署失败

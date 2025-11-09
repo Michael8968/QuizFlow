@@ -3,21 +3,25 @@
   "version": "1.0.0",
   "description": "AI 题库 + 答卷 SaaS 平台",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "pnpm --parallel dev",
-    "dev:web": "pnpm --filter web dev",
-    "dev:h5": "pnpm --filter h5-quiz dev",
-    "dev:api": "pnpm --filter api dev",
-    "dev:website": "pnpm --filter website dev",
-    "build": "pnpm --recursive build",
-    "build:web": "pnpm --filter web build",
-    "build:h5": "pnpm --filter h5-quiz build",
-    "build:api": "pnpm --filter api build",
-    "build:website": "pnpm --filter website build",
-    "lint": "pnpm --recursive lint",
-    "type-check": "pnpm --recursive type-check",
-    "test": "pnpm --recursive test",
-    "clean": "pnpm --recursive clean"
+    "dev": "yarn workspaces run dev",
+    "dev:web": "yarn workspace web dev",
+    "dev:h5": "yarn workspace h5-quiz dev",
+    "dev:api": "yarn workspace api dev",
+    "dev:website": "yarn workspace website dev",
+    "build": "yarn workspaces run build",
+    "build:web": "yarn workspace web build",
+    "build:h5": "yarn workspace h5-quiz build",
+    "build:api": "yarn workspace api build",
+    "build:website": "yarn workspace website build",
+    "lint": "yarn workspaces run lint",
+    "type-check": "yarn workspaces run type-check",
+    "test": "yarn workspaces run test",
+    "clean": "yarn workspaces run clean"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -30,5 +34,5 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "yarn@1.22.22"
 }

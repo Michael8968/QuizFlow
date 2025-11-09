@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm build:web",
+  "buildCommand": "yarn build:web",
   "outputDirectory": "apps/web/dist",
   "framework": null
 }
