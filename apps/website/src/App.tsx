@@ -10,6 +10,8 @@ import { FAQ } from '@/pages/faq'
 import { Login } from '@/pages/auth/login'
 import { Register } from '@/pages/auth/register'
 import { AuthCallback } from '@/pages/auth/callback'
+import { Privacy } from '@/pages/privacy'
+import { Terms } from '@/pages/terms'
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />

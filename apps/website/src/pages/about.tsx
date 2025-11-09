@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Mail, Github, Twitter, Linkedin } from 'lucide-react'
 
@@ -70,10 +71,10 @@ export function About() {
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-primary" />
                 <a
-                  href="mailto:contact@quizflow.com"
+                  href="mailto:contact@quiz-flow.com"
                   className="text-primary hover:underline"
                 >
-                  contact@quizflow.com
+                  contact@quiz-flow.com
                 </a>
               </div>
               <div className="flex items-center space-x-4 pt-4">
@@ -110,24 +111,18 @@ export function About() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <a
-                href="#"
+              <Link
+                to="/privacy"
                 className="block text-primary hover:underline"
               >
                 隐私政策
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/terms"
                 className="block text-primary hover:underline"
               >
                 使用条款
-              </a>
-              <a
-                href="#"
-                className="block text-primary hover:underline"
-              >
-                Cookie 政策
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>

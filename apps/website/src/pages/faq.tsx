@@ -102,10 +102,10 @@ export function FAQ() {
             还有其他问题？我们很乐意为您解答
           </p>
           <a
-            href="mailto:contact@quizflow.com"
+            href="mailto:contact@quiz-flow.com"
             className="text-primary hover:underline font-medium"
           >
-            contact@quizflow.com
+            contact@quiz-flow.com
           </a>
         </div>
       </div>

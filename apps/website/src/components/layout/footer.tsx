@@ -53,14 +53,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/privacy" className="hover:text-white transition-colors">
                   隐私政策
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/terms" className="hover:text-white transition-colors">
                   使用条款
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -71,11 +71,11 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li>
                 <a
-                  href="mailto:contact@quizflow.com"
+                  href="mailto:contact@quiz-flow.com"
                   className="flex items-center space-x-2 hover:text-white transition-colors"
                 >
                   <Mail className="h-4 w-4" />
-                  <span>contact@quizflow.com</span>
+                  <span>contact@quiz-flow.com</span>
                 </a>
               </li>
               <li className="flex items-center space-x-4">

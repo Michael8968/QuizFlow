@@ -388,9 +388,9 @@ export function Settings() {
   // 处理帮助链接
   const handleHelpClick = (type: 'guide' | 'faq' | 'support') => {
     const links = {
-      guide: 'https://docs.quizflow.com/guide',
-      faq: 'https://docs.quizflow.com/faq',
-      support: 'mailto:support@quizflow.com',
+      guide: 'https://docs.quiz-flow.com/guide',
+      faq: 'https://docs.quiz-flow.com/faq',
+      support: 'mailto:support@quiz-flow.com',
     }
     window.open(links[type], '_blank')
   }
