@@ -1,7 +1,7 @@
 {
   "buildCommand": "pnpm build:web",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "corepack enable && corepack prepare pnpm@10.19.0 --activate && pnpm install",
+  "installCommand": "npm install -g pnpm@latest && pnpm install --no-frozen-lockfile",
   "framework": null
 }
 
