@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { GraduationCap, User, Building2, CheckCircle2 } from 'lucide-react'
 
 export function UseCases() {

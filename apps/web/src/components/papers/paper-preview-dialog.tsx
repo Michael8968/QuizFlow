@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Paper, Question } from '@/types'
-import { Loader2, X } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { getQuestionTypeLabel, getDifficultyColor } from '@/lib/utils'
 
@@ -27,9 +27,9 @@ export function PaperPreviewDialog({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   // 如果 paper 有 ID，从 API 获取最新数据
-  const { data: paperData, isLoading } = useQuery<Paper>({
+  const { data: paperData, isLoading } = useQuery<Paper | null>({
     queryKey: ['paper', paper?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Paper | null> => {
       if (!paper?.id) return null
       return api.getPaper(paper.id) as Promise<Paper>
     },
@@ -128,7 +128,7 @@ export function PaperPreviewDialog({
                     
                     {currentQuestion.options && currentQuestion.options.length > 0 ? (
                       <div className="space-y-2">
-                        {currentQuestion.options.map((option, index) => (
+                        {currentQuestion.options.map((option: string, index: number) => (
                           <div
                             key={index}
                             className="p-3 border border-gray-200 rounded-md"
@@ -194,7 +194,7 @@ export function PaperPreviewDialog({
                 {/* 题目索引 */}
                 {questions.length > 1 && (
                   <div className="flex flex-wrap gap-2">
-                    {questions.map((_, index) => (
+                    {questions.map((_: Question, index: number) => (
                       <button
                         key={index}
                         onClick={() => setCurrentQuestionIndex(index)}

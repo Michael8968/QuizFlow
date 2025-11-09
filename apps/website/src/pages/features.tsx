@@ -16,9 +16,7 @@ import answerVideo from '@/assets/video/answer.mp4'
 import reportImage from '@/assets/image/report.png'
 import reportVideo from '@/assets/video/report.mp4'
 import subscriptionImage from '@/assets/image/subscription.jpg'
-import subscriptionVideo from '@/assets/video/subscription.mp4'
 import collaborationImage from '@/assets/image/collaboration.jpg'
-import collaborationVideo from '@/assets/video/collaboration.mp4'
 
 export function Features() {
   const features = [
@@ -84,7 +82,7 @@ export function Features() {
         '发票和账单管理',
         '使用量统计和提醒',
       ],
-      video: subscriptionVideo,
+      video: undefined,
       image: subscriptionImage,
     },
     {
@@ -97,7 +95,7 @@ export function Features() {
         '协作编辑和评论',
         '数据共享和同步',
       ],
-      video: collaborationVideo,
+      video: undefined,
       image: collaborationImage,
     },
   ]
@@ -153,18 +151,26 @@ export function Features() {
                 </div>
                 <div className="flex-1">
                   <div className="rounded-lg aspect-video overflow-hidden bg-gray-100">
-                    <video
-                      className="w-full h-full object-cover"
-                      poster={feature.image}
-                      controls={false}
-                      preload="metadata"
-                      loop
-                      muted
-                      autoPlay
-                    >
-                      <source src={feature.video} type="video/mp4" />
-                      您的浏览器不支持视频播放。
-                    </video>
+                    {feature.video ? (
+                      <video
+                        className="w-full h-full object-cover"
+                        poster={feature.image}
+                        controls={false}
+                        preload="metadata"
+                        loop
+                        muted
+                        autoPlay
+                      >
+                        <source src={feature.video} type="video/mp4" />
+                        您的浏览器不支持视频播放。
+                      </video>
+                    ) : (
+                      <img
+                        src={feature.image}
+                        alt={feature.title}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Mail, Github, Twitter, Linkedin } from 'lucide-react'
 
 export function About() {

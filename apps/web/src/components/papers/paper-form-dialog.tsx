@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Paper, Question } from '@/types'
-import { Check, X, Loader2 } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { api } from '@/lib/api'
 import { getQuestionTypeLabel, getDifficultyColor } from '@/lib/utils'
@@ -68,7 +68,6 @@ export function PaperFormDialog({
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
   } = useForm<PaperFormData>({
     resolver: zodResolver(paperSchema),
     defaultValues: {
