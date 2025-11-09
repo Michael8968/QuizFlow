@@ -10,6 +10,7 @@ import { Reports } from '@/pages/reports'
 import { Settings } from '@/pages/settings/index'
 import { Login } from '@/pages/auth/login'
 import { Register } from '@/pages/auth/register'
+import { AuthCallback } from '@/pages/auth/callback'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="questions" element={<Questions />} />
