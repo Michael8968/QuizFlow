@@ -54,6 +54,24 @@ class ApiClient {
     })
 
     if (!response.ok) {
+      // 处理 401 未授权错误，跳转到登录页
+      if (response.status === 401) {
+        // 清除本地存储的认证信息
+        try {
+          localStorage.removeItem('auth-storage')
+        } catch (error) {
+          console.error('Error clearing auth storage:', error)
+        }
+        
+        // 如果当前不在登录页，则跳转到登录页
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+        
+        const errorText = await response.text()
+        throw new Error(`未授权：请重新登录 - ${errorText}`)
+      }
+      
       const errorText = await response.text()
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`)
     }

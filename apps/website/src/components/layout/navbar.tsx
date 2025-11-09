@@ -189,14 +189,10 @@ export function Navbar() {
               </div>
             ) : (
               <>
-                <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    登录
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="sm">免费试用</Button>
-                </Link>
+                <Button variant="ghost" size="sm" onClick={handleGoToApp}>
+                  登录
+                </Button>
+                <Button size="sm" onClick={handleGoToApp}>免费试用</Button>
               </>
             )}
           </div>
@@ -261,14 +257,25 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full">
-                      登录
-                    </Button>
-                  </Link>
-                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full">免费试用</Button>
-                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => {
+                      handleGoToApp()
+                      setMobileMenuOpen(false)
+                    }}
+                  >
+                    登录
+                  </Button>
+                  <Button 
+                    className="w-full"
+                    onClick={() => {
+                      handleGoToApp()
+                      setMobileMenuOpen(false)
+                    }}
+                  >
+                    免费试用
+                  </Button>
                 </>
               )}
             </div>

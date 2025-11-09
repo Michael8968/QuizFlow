@@ -11,6 +11,14 @@ import {
 } from 'lucide-react'
 
 export function Home() {
+  // 获取 web 应用 URL
+  const webAppUrl = import.meta.env.VITE_WEB_URL || 'http://localhost:3000'
+
+  // 跳转到 web 应用
+  const handleGoToApp = () => {
+    window.open(webAppUrl, '_blank')
+  }
+
   const features = [
     {
       icon: Sparkles,
@@ -73,12 +81,10 @@ export function Home() {
             Create, publish and analyze quizzes in minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="lg" className="text-lg px-8">
-                免费试用
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+            <Button size="lg" className="text-lg px-8" onClick={handleGoToApp}>
+              免费试用
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
             <Link to="/features">
               <Button size="lg" variant="outline" className="text-lg px-8">
                 查看功能
@@ -190,11 +196,9 @@ export function Home() {
           <p className="text-xl mb-8 opacity-90">
             立即注册，免费试用所有功能
           </p>
-          <Link to="/register">
-            <Button size="lg" variant="secondary" className="text-lg px-8">
-              立即开始免费试用
-            </Button>
-          </Link>
+          <Button size="lg" variant="secondary" className="text-lg px-8" onClick={handleGoToApp}>
+            立即开始免费试用
+          </Button>
         </div>
       </section>
     </div>
