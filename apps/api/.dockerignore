@@ -1,0 +1,42 @@
+# 依赖
+node_modules
+npm-debug.log
+yarn-error.log
+
+# 构建输出
+dist
+build
+*.tsbuildinfo
+
+# 开发文件
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# 测试
+coverage
+.nyc_output
+*.test.js
+*.spec.js
+
+# Git
+.git
+.gitignore
+
+# 文档
+README.md
+*.md
+
+# 其他
+.DS_Store
+*.pem
+*.key
+
