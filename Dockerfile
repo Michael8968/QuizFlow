@@ -5,7 +5,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # 安装 yarn（如果基础镜像没有）
-RUN npm install -g yarn
+# 检查 yarn 是否已安装，如果没有则安装
+RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn
 
 # 复制根目录的 package.json 和 yarn.lock（用于 workspace 管理）
 # 注意：构建上下文应该是项目根目录
@@ -31,8 +32,9 @@ FROM node:20-alpine AS production
 # 设置工作目录
 WORKDIR /app
 
-# 安装 yarn
-RUN npm install -g yarn
+# 安装 yarn（如果基础镜像没有）
+# 检查 yarn 是否已安装，如果没有则安装
+RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn
 
 # 复制根目录的 package.json 和 yarn.lock
 COPY package.json ./
