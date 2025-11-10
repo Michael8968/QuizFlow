@@ -8,7 +8,9 @@ WORKDIR /app
 RUN npm install -g yarn
 
 # 复制根目录的 package.json 和 yarn.lock（用于 workspace 管理）
-COPY package.json yarn.lock ./
+# 注意：构建上下文应该是项目根目录
+COPY package.json ./
+COPY yarn.lock* ./
 
 # 复制 API 项目的 package.json
 COPY apps/api/package.json ./apps/api/
@@ -16,9 +18,8 @@ COPY apps/api/package.json ./apps/api/
 # 安装依赖（使用 yarn workspaces）
 RUN yarn install --frozen-lockfile --production=false
 
-# 复制所有源代码
+# 复制所有源代码（tsconfig.json 已经在 apps/api 目录中）
 COPY apps/api ./apps/api
-COPY tsconfig.json ./
 
 # 构建应用
 WORKDIR /app/apps/api
@@ -34,7 +35,8 @@ WORKDIR /app
 RUN npm install -g yarn
 
 # 复制根目录的 package.json 和 yarn.lock
-COPY package.json yarn.lock ./
+COPY package.json ./
+COPY yarn.lock* ./
 
 # 复制 API 项目的 package.json
 COPY apps/api/package.json ./apps/api/
