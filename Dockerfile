@@ -52,9 +52,10 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 # 设置工作目录为 API 目录
 WORKDIR /app/apps/api
 
-# 暴露端口（腾讯云开发云托管默认使用 80 端口）
-# 应用会从 PORT 环境变量读取端口，云托管会自动设置
-EXPOSE 80
+# 暴露端口
+# 本地测试使用 3001，腾讯云开发云托管使用 80
+# 应用会从 PORT 环境变量读取端口
+EXPOSE 3001
 
 # 设置环境变量
 ENV NODE_ENV=production
