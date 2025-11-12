@@ -19,6 +19,9 @@ COPY apps/api/package.json ./apps/api/
 
 # 安装依赖（使用 yarn workspaces）
 # 使用 --frozen-lockfile 确保依赖版本一致性
+# 跳过 puppeteer 的 Chromium 下载（如果不需要浏览器功能）
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN yarn install --frozen-lockfile --production=false && \
     yarn cache clean
 
@@ -34,9 +37,15 @@ FROM node:20-alpine AS production
 
 # 设置时区为上海（解决时区不一致问题）
 # 参考：https://docs.cloudbase.net/run/best-practice/fix-timezone
+# 配置 Alpine 镜像源为国内镜像（解决网络问题）
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories || \
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories || true
+
+# 设置时区
+ENV TZ=Asia/Shanghai
 RUN apk add --no-cache tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone && \
     apk del tzdata
 
 # 设置工作目录
@@ -56,7 +65,10 @@ COPY apps/api/package.json ./apps/api/
 
 # 只安装生产依赖
 # 使用 --frozen-lockfile 确保依赖版本一致性
+# 跳过 puppeteer 的 Chromium 下载（如果不需要浏览器功能）
 # 清理缓存以减少镜像大小
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN yarn install --frozen-lockfile --production=true && \
     yarn cache clean && \
     rm -rf /tmp/* /var/cache/apk/*
