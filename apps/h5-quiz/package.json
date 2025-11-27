@@ -11,6 +11,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@quizflow/types": "*",
+    "@quizflow/utils": "*",
+    "@quizflow/validators": "*",
     "@hookform/resolvers": "^3.3.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-progress": "^1.0.3",

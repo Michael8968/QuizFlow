@@ -1,11 +1,17 @@
-// Re-export utilities from shared package
+// Class name utilities
+export { cn } from './cn';
+
+// Format utilities
 export {
-  cn,
   formatDate,
   formatDateOnly,
   formatScore,
   formatDuration,
   formatTimeAgo,
+} from './format';
+
+// Quiz utilities
+export {
   getDifficultyColor,
   getDifficultyLabel,
   getQuestionTypeLabel,
@@ -13,4 +19,4 @@ export {
   getStatusLabel,
   generateQuizCode,
   calculateScore,
-} from '@quizflow/utils'
+} from './quiz';

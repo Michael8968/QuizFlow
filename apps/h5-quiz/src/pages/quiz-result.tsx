@@ -4,6 +4,7 @@ import { useQuizStore } from '@/stores/quiz'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, RotateCcw, Home, X, CheckCircle2 } from 'lucide-react'
+import type { QuizQuestionWithAnswer } from '@quizflow/types'
 
 export function QuizResult() {
   const { answerId: _answerId } = useParams()
@@ -23,7 +24,7 @@ export function QuizResult() {
   }
 
   // 比较答案是否相等（处理数组和字符串）
-  const isAnswerCorrect = (question: any, userAnswers: string | string[]): boolean => {
+  const isAnswerCorrect = (question: QuizQuestionWithAnswer, userAnswers: string | string[]): boolean => {
     if (!question.answer) return false
     
     const correctAnswer = Array.isArray(question.answer) ? question.answer : [question.answer]
