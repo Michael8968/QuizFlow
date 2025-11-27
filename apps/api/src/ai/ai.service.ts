@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { SupabaseService } from '../common/supabase.service';
+import { SupabaseService } from '../database/supabase.service';
 
 @Injectable()
 export class AiService {

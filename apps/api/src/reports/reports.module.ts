@@ -1,12 +1,17 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
-import { CommonModule } from '../common/common.module';
+import { ReportRepository } from './report.repository';
+import { PapersModule } from '../papers/papers.module';
+import { AnswersModule } from '../answers/answers.module';
 
 @Module({
-  imports: [CommonModule],
+  imports: [
+    forwardRef(() => PapersModule),
+    forwardRef(() => AnswersModule),
+  ],
   controllers: [ReportsController],
-  providers: [ReportsService],
-  exports: [ReportsService],
+  providers: [ReportsService, ReportRepository],
+  exports: [ReportsService, ReportRepository],
 })
 export class ReportsModule {}

@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { QuizState, Quiz } from '@/types'
+import { QuizState, QuizWithAnswers } from '@quizflow/types'
 
 interface QuizStore extends QuizState {
-  setQuiz: (quiz: Quiz) => void
+  setQuiz: (quiz: QuizWithAnswers) => void
   setCurrentQuestionIndex: (index: number) => void
   setAnswer: (questionId: string, answer: string | string[]) => void
   setTimeRemaining: (time: number) => void

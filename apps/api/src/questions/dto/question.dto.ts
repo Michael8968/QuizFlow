@@ -1,10 +1,11 @@
 import { IsString, IsArray, IsOptional, IsEnum, IsNumber, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import type { QuestionType, DifficultyLevel } from '@quizflow/types';
 
 export class CreateQuestionDto {
   @ApiProperty({ description: '题目类型', enum: ['single', 'multiple', 'fill', 'essay'] })
   @IsEnum(['single', 'multiple', 'fill', 'essay'])
-  type: string;
+  type: QuestionType;
 
   @ApiProperty({ description: '题目内容' })
   @IsString()
@@ -30,7 +31,7 @@ export class CreateQuestionDto {
 
   @ApiProperty({ description: '难度', enum: ['easy', 'medium', 'hard'] })
   @IsEnum(['easy', 'medium', 'hard'])
-  difficulty: string;
+  difficulty: DifficultyLevel;
 
   @ApiProperty({ description: '分值', minimum: 1, maximum: 100 })
   @IsNumber()
@@ -43,7 +44,7 @@ export class UpdateQuestionDto {
   @ApiProperty({ description: '题目类型', required: false })
   @IsOptional()
   @IsEnum(['single', 'multiple', 'fill', 'essay'])
-  type?: string;
+  type?: QuestionType;
 
   @ApiProperty({ description: '题目内容', required: false })
   @IsOptional()
@@ -73,7 +74,7 @@ export class UpdateQuestionDto {
   @ApiProperty({ description: '难度', required: false })
   @IsOptional()
   @IsEnum(['easy', 'medium', 'hard'])
-  difficulty?: string;
+  difficulty?: DifficultyLevel;
 
   @ApiProperty({ description: '分值', required: false })
   @IsOptional()

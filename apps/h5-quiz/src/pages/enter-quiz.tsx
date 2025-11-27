@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { QrCode, BookOpen, Clock, Users } from 'lucide-react'
 import { api } from '@/lib/api'
-import type { Quiz } from '@/types'
+import type { QuizWithAnswers } from '@quizflow/types'
 import { QRScanner } from '@/components/qr-scanner'
 
 const enterQuizSchema = z.object({
@@ -21,7 +21,7 @@ const enterQuizSchema = z.object({
 type EnterQuizForm = z.infer<typeof enterQuizSchema>
 
 // 将数据库格式转换为前端格式
-function transformPaperToQuiz(paper: any): Quiz {
+function transformPaperToQuiz(paper: any): QuizWithAnswers {
   const questions = Array.isArray(paper.questions) 
     ? paper.questions.map((q: any, index: number) => ({
         id: q.id || String(index),
@@ -56,6 +56,7 @@ function transformPaperToQuiz(paper: any): Quiz {
     description: paper.description,
     questions,
     settings,
+    quiz_code: paper.quiz_code || '',
     created_at: paper.created_at,
   }
 }
@@ -66,7 +67,7 @@ export function EnterQuiz() {
   const { setQuiz, setStudentInfo } = useQuizStore()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [paperInfo, setPaperInfo] = useState<Quiz | null>(null)
+  const [paperInfo, setPaperInfo] = useState<QuizWithAnswers | null>(null)
 
   const {
     register,

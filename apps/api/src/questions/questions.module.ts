@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { QuestionsController } from './questions.controller';
 import { QuestionsService } from './questions.service';
-import { CommonModule } from '../common/common.module';
+import { QuestionRepository } from './question.repository';
 
 @Module({
-  imports: [CommonModule],
   controllers: [QuestionsController],
-  providers: [QuestionsService],
-  exports: [QuestionsService],
+  providers: [QuestionsService, QuestionRepository],
+  exports: [QuestionsService, QuestionRepository],
 })
 export class QuestionsModule {}

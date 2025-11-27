@@ -5,6 +5,8 @@ import { AppModule } from './app.module';
 import helmet from 'helmet';
 import compression from 'compression';
 import { ConfigService } from '@nestjs/config';
+import { GlobalExceptionFilter } from './common/filters';
+import { TransformInterceptor, LoggingInterceptor } from './common/interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -39,6 +41,15 @@ async function bootstrap() {
     },
     credentials: true,
   });
+
+  // 全局异常过滤器
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // 全局拦截器
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+  );
 
   // 全局验证管道
   app.useGlobalPipes(
