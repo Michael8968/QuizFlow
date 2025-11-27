@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { DatabaseModule } from './database/database.module';
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { QuestionsModule } from './questions/questions.module';
 import { PapersModule } from './papers/papers.module';
@@ -8,7 +10,6 @@ import { AnswersModule } from './answers/answers.module';
 import { ReportsModule } from './reports/reports.module';
 import { AiModule } from './ai/ai.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
-import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CommonModule } from './common/common.module';
         limit: 100, // 限制 100 次请求
       },
     ]),
+    DatabaseModule,
     CommonModule,
     AuthModule,
     QuestionsModule,

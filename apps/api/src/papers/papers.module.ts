@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PapersController } from './papers.controller';
 import { PapersService } from './papers.service';
-import { CommonModule } from '../common/common.module';
+import { PaperRepository } from './paper.repository';
+import { QuestionsModule } from '../questions/questions.module';
 
 @Module({
-  imports: [CommonModule],
+  imports: [forwardRef(() => QuestionsModule)],
   controllers: [PapersController],
-  providers: [PapersService],
-  exports: [PapersService],
+  providers: [PapersService, PaperRepository],
+  exports: [PapersService, PaperRepository],
 })
 export class PapersModule {}
