@@ -202,11 +202,38 @@ class ApiClient {
     return this.request('/subscriptions')
   }
 
-  async createSubscription(plan: string) {
-    return this.request('/subscriptions', {
+  async getPlans() {
+    return this.request('/subscriptions/plans')
+  }
+
+  async createCheckoutSession(plan: string, billingPeriod: 'monthly' | 'yearly' = 'monthly') {
+    return this.request<{ sessionId: string; url: string }>('/subscriptions/checkout', {
       method: 'POST',
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, billingPeriod }),
     })
+  }
+
+  async createPortalSession() {
+    return this.request<{ url: string }>('/subscriptions/portal', {
+      method: 'POST',
+    })
+  }
+
+  async cancelSubscription() {
+    return this.request('/subscriptions/cancel', {
+      method: 'POST',
+    })
+  }
+
+  async resumeSubscription() {
+    return this.request('/subscriptions/resume', {
+      method: 'POST',
+    })
+  }
+
+  // 旧版兼容
+  async createSubscription(plan: string) {
+    return this.createCheckoutSession(plan, 'monthly')
   }
 }
 

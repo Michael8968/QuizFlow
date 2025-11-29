@@ -424,35 +424,35 @@ export function Reports() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">成绩分析</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">成绩分析</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
             查看和分析学生的考试成绩数据
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh}>
+          <Button variant="outline" onClick={handleRefresh} className="flex-1 sm:flex-none">
             <RefreshCw className="mr-2 h-4 w-4" />
-            刷新数据
+            <span className="hidden xs:inline">刷新</span>
           </Button>
-          <Button onClick={handleExport}>
+          <Button onClick={handleExport} className="flex-1 sm:flex-none">
             <Download className="mr-2 h-4 w-4" />
-            导出报告
+            <span className="hidden xs:inline">导出</span>
           </Button>
         </div>
       </div>
 
       {/* 试卷选择 */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-medium">选择试卷：</label>
+        <CardContent className="p-4 sm:pt-6 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <label className="text-sm font-medium whitespace-nowrap">选择试卷：</label>
             <select
               value={selectedPaperId}
               onChange={(e) => setSearchParams({ paperId: e.target.value })}
-              className="w-[300px] px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full sm:w-[300px] px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">全部试卷</option>
               {userPapers.filter(paper => paper.status === 'published').map((paper) => (
@@ -466,50 +466,50 @@ export function Reports() {
       </Card>
 
       {/* 概览统计 */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总学生数</CardTitle>
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">总学生数</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.totalStudents}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{summaryStats.totalStudents}</div>
+            <p className="text-xs text-muted-foreground truncate">
               {selectedPaperId === 'all' ? '所有试卷' : selectedPaper?.title || '当前试卷'}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">平均分</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">平均分</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.averageScore.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{summaryStats.averageScore.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground hidden sm:block">
               已完成答卷的平均得分率
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">及格率</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">及格率</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.passRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{summaryStats.passRate.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground hidden sm:block">
               得分≥60%的答卷占比
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">完成率</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">完成率</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.completionRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{summaryStats.completionRate.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground hidden sm:block">
               已完成答卷占比
             </p>
           </CardContent>
@@ -517,26 +517,26 @@ export function Reports() {
       </div>
 
       {/* 图表分析 */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         {/* 分数分布 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>分数分布</CardTitle>
-            <CardDescription>学生成绩分布情况</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">分数分布</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">学生成绩分布情况</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {scoreDistributionData.some(d => d.count > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={scoreDistributionData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="score" />
-                  <YAxis />
+                  <XAxis dataKey="score" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#3B82F6" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-500">
+              <div className="flex items-center justify-center h-[250px] text-gray-500 text-sm">
                 暂无数据
               </div>
             )}
@@ -544,21 +544,21 @@ export function Reports() {
         </Card>
 
         {/* 难度分析 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>题目难度分布</CardTitle>
-            <CardDescription>各难度题目占比</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">题目难度分布</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">各难度题目占比</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {difficultyAnalysisData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
                     data={difficultyAnalysisData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={40}
+                    outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
                     label={({ name, value }) => `${name}: ${value}%`}
@@ -572,7 +572,7 @@ export function Reports() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-500">
+              <div className="flex items-center justify-center h-[250px] text-gray-500 text-sm text-center px-4">
                 {selectedPaperId === 'all' ? '请选择具体试卷查看难度分布' : '暂无数据'}
               </div>
             )}
@@ -580,24 +580,24 @@ export function Reports() {
         </Card>
 
         {/* 题目正确率 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>题目正确率分析</CardTitle>
-            <CardDescription>各题目的正确率统计</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">题目正确率分析</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">各题目的正确率统计</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {questionAnalysisData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={questionAnalysisData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="question" />
-                  <YAxis domain={[0, 100]} />
+                  <XAxis dataKey="question" tick={{ fontSize: 12 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
                   <Tooltip formatter={(value) => [`${value}%`, '正确率']} />
                   <Bar dataKey="correctRate" fill="#10B981" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-500">
+              <div className="flex items-center justify-center h-[250px] text-gray-500 text-sm text-center px-4">
                 {selectedPaperId === 'all' ? '请选择具体试卷查看题目分析' : '暂无数据'}
               </div>
             )}
@@ -605,24 +605,24 @@ export function Reports() {
         </Card>
 
         {/* 答题时间分析 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>答题时间分析</CardTitle>
-            <CardDescription>学生答题时间分布</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">答题时间分析</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">学生答题时间分布</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {timeAnalysisData.some(d => d.count > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={timeAnalysisData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
+                  <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
                   <Line type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-500">
+              <div className="flex items-center justify-center h-[250px] text-gray-500 text-sm">
                 暂无数据
               </div>
             )}
@@ -631,45 +631,47 @@ export function Reports() {
       </div>
 
       {/* 报告列表 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>历史报告</CardTitle>
-          <CardDescription>查看之前的分析报告</CardDescription>
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">历史报告</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">查看之前的分析报告</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0">
           {reportsData && reportsData.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {reportsData.filter(report => userPapers.some(p => p.id === report.paper_id)).map((report) => {
                 const paper = userPapers.find(p => p.id === report.paper_id)
                 return (
-                  <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-medium">{paper?.title || '未知试卷'}</h3>
-                      <div className="flex gap-6 mt-2 text-sm text-gray-600">
-                        <span>学生数: {report.summary.total_students}</span>
-                        <span>平均分: {report.summary.average_score.toFixed(1)}%</span>
-                        <span>及格率: {report.summary.pass_rate.toFixed(1)}%</span>
-                        <span>完成率: {report.summary.completion_rate.toFixed(1)}%</span>
+                  <div key={report.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm sm:text-base truncate">{paper?.title || '未知试卷'}</h3>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:flex sm:gap-6 mt-2 text-xs sm:text-sm text-gray-600">
+                        <span>学生: {report.summary.total_students}</span>
+                        <span>平均: {report.summary.average_score.toFixed(1)}%</span>
+                        <span>及格: {report.summary.pass_rate.toFixed(1)}%</span>
+                        <span>完成: {report.summary.completion_rate.toFixed(1)}%</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        生成时间: {formatDate(report.created_at)}
+                        {formatDate(report.created_at)}
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none h-8 text-xs sm:text-sm"
                         onClick={() => handleViewReport(report)}
                       >
-                        <Eye className="mr-2 h-4 w-4" />
+                        <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         查看
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none h-8 text-xs sm:text-sm"
                         onClick={() => handleDownloadReport(report)}
                       >
-                        <Download className="mr-2 h-4 w-4" />
+                        <Download className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         下载
                       </Button>
                     </div>
@@ -678,7 +680,7 @@ export function Reports() {
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
               暂无历史报告
             </div>
           )}

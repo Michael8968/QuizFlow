@@ -73,12 +73,14 @@ CREATE TABLE reports (
 -- 订阅表
 CREATE TABLE subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   plan VARCHAR(20) NOT NULL CHECK (plan IN ('free', 'professional', 'institution', 'ai_enhanced')),
-  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'canceled', 'past_due')),
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'canceled', 'past_due', 'trialing')),
   current_period_start TIMESTAMP WITH TIME ZONE,
   current_period_end TIMESTAMP WITH TIME ZONE,
   stripe_subscription_id VARCHAR(100),
+  stripe_customer_id VARCHAR(100),
+  cancel_at_period_end BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

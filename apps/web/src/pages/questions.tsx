@@ -209,11 +209,11 @@ export function Questions() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">题库管理</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">题库管理</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
             管理您的题目库，创建、编辑和组织题目
           </p>
         </div>
@@ -221,14 +221,16 @@ export function Questions() {
           <Button
             variant="outline"
             onClick={() => setIsAiDialogOpen(true)}
-            className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100"
+            className="flex-1 sm:flex-none bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100"
           >
             <Sparkles className="mr-2 h-4 w-4" />
-            AI 出题
+            <span className="hidden xs:inline">AI 出题</span>
+            <span className="xs:hidden">AI</span>
           </Button>
-          <Button onClick={handleAdd}>
+          <Button onClick={handleAdd} className="flex-1 sm:flex-none">
             <Plus className="mr-2 h-4 w-4" />
-            添加题目
+            <span className="hidden xs:inline">添加题目</span>
+            <span className="xs:hidden">添加</span>
           </Button>
         </div>
       </div>
@@ -290,71 +292,78 @@ export function Questions() {
       {/* 题目列表 */}
       {!isLoading && !error && (
         <>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredQuestions.map((question: Question) => (
-              <Card key={question.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-medium text-gray-500">
+              <Card key={question.id} className="overflow-hidden">
+                <CardContent className="p-4 sm:pt-6 sm:px-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="text-xs sm:text-sm font-medium text-gray-500">
                           {getQuestionTypeLabel(question.type)}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
-                          {question.difficulty === 'easy' ? '简单' : 
+                        <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
+                          {question.difficulty === 'easy' ? '简单' :
                            question.difficulty === 'medium' ? '中等' : '困难'}
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-xs sm:text-sm text-gray-500">
                           {question.points} 分
                         </span>
                       </div>
-                      <p className="text-gray-900 mb-3">{question.content}</p>
+                      <p className="text-sm sm:text-base text-gray-900 mb-3 line-clamp-3 sm:line-clamp-none">{question.content}</p>
                       {question.options && question.options.length > 0 && (
                         <div className="space-y-1 mb-3">
                           {question.options.slice(0, 2).map((option: string, index: number) => (
-                            <div key={index} className="text-sm text-gray-600">
+                            <div key={index} className="text-xs sm:text-sm text-gray-600 truncate">
                               {String.fromCharCode(65 + index)}. {option}
                             </div>
                           ))}
                           {question.options.length > 2 && (
-                            <div className="text-sm text-gray-500">
+                            <div className="text-xs sm:text-sm text-gray-500">
                               还有 {question.options.length - 2} 个选项...
                             </div>
                           )}
                         </div>
                       )}
                       <div className="flex flex-wrap gap-1">
-                        {question.tags?.map((tag: string) => (
+                        {question.tags?.slice(0, 3).map((tag: string) => (
                           <span
                             key={tag}
-                            className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
+                            className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
                           >
                             {tag}
                           </span>
                         ))}
+                        {question.tags && question.tags.length > 3 && (
+                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-100 text-gray-500 text-xs rounded-md">
+                            +{question.tags.length - 3}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <Button 
-                        variant="ghost" 
+                    <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleView(question)}
                         title="查看详情"
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(question)}
                         title="编辑"
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-600 hover:text-red-700"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-red-600 hover:text-red-700"
                         onClick={() => handleDelete(question.id)}
                         title="删除"
                         disabled={deleteMutation.isPending}

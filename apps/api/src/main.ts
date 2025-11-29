@@ -9,7 +9,9 @@ import { GlobalExceptionFilter } from './common/filters';
 import { TransformInterceptor, LoggingInterceptor } from './common/interceptors';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true, // 启用 rawBody 以支持 Stripe Webhook 签名验证
+  });
   const configService = app.get(ConfigService);
 
   // 安全中间件
