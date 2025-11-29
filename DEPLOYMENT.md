@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   前端 (Vercel)  │    │   H5 (Vercel)   │    │  后端 (多种选择)  │
+│   教师端 (Vercel) │    │   H5 (Vercel)   │    │  后端 (多种选择)  │
 │   Port: 3000    │    │   Port: 3002    │    │   Port: 3001    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
@@ -16,6 +16,15 @@
                     └─────────────────┘
 ```
 
+### 应用说明
+
+| 应用 | 说明 | 主要功能 |
+|------|------|----------|
+| **教师端 (web)** | 教师/管理员使用 | 题库管理、组卷、报告分析、订阅管理 |
+| **H5 答卷 (h5-quiz)** | 学生使用 | 扫码答题、查看成绩 |
+| **后端 API (api)** | 服务端 | RESTful API、AI 生成、Stripe 支付 |
+| **官网 (website)** | 营销落地页 | 产品介绍、文档 |
+
 ### 后端部署选项
 
 - **Render**：适合海外部署，免费计划支持（详见下方）
@@ -23,7 +32,7 @@
 
 ## 📦 部署步骤
 
-### 1. 前端部署 (Vercel)
+### 1. 教师端部署 (Vercel)
 
 #### 1.1 创建 Vercel 项目
 1. 访问 [Vercel Dashboard](https://vercel.com/dashboard)
@@ -146,10 +155,21 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 JWT_SECRET=your_jwt_secret
 ```
 
-**可选的环境变量：**
+**可选的环境变量（AI 生成功能）：**
 ```env
-OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_KEY=your_deepseek_api_key
+OPENAI_API_BASE=https://api.deepseek.com
+```
+
+**可选的环境变量（Stripe 支付）：**
+```env
 STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+```
+
+**可选的环境变量（CORS）：**
+```env
+ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-h5.vercel.app
 ```
 
 **重要提示：**
@@ -161,19 +181,6 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 
 由于你的 API 需要被前端调用，需要更新 CORS 配置。在 `apps/api/src/main.ts` 中，确保生产环境的 CORS 配置包含你的前端域名：
 
-```typescript
-app.enableCors({
-  origin: [
-    'http://localhost:3000', // 开发环境
-    'http://localhost:3002', // 开发环境
-    'https://your-frontend-domain.vercel.app', // 生产环境前端
-    'https://your-h5-domain.vercel.app', // 生产环境 H5
-  ],
-  credentials: true,
-});
-```
-
-或者使用环境变量动态配置：
 ```typescript
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:3000',
@@ -212,6 +219,7 @@ ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-h5.vercel.app
    - 部署成功后，Render 会提供一个 URL
    - 格式：`https://quizflow-api.onrender.com`
    - 这个 URL 就是你的 API 地址
+   - API 文档地址：`https://quizflow-api.onrender.com/api/docs`
 
 #### 3.7 自动部署配置
 
@@ -284,6 +292,15 @@ Render 默认会在以下情况自动部署：
 - 首次请求会唤醒服务（可能需要几秒）
 - 考虑升级到付费计划以避免休眠
 
+**问题 7：AI 生成功能不可用**
+- 确保已设置 `OPENAI_API_KEY` 环境变量
+- 确保已设置 `OPENAI_API_BASE=https://api.deepseek.com`
+
+**问题 8：Stripe 支付功能不可用**
+- 确保已设置 `STRIPE_SECRET_KEY` 环境变量
+- 配置 Stripe Webhook 端点：`https://your-api.onrender.com/api/subscriptions/webhook`
+- 设置 `STRIPE_WEBHOOK_SECRET` 环境变量
+
 #### 3.11 性能优化建议
 
 1. **启用健康检查**
@@ -318,9 +335,42 @@ Render 默认会在以下情况自动部署：
 #### 4.3 配置存储
 ```sql
 -- 创建存储桶
-INSERT INTO storage.buckets (id, name, public) VALUES 
+INSERT INTO storage.buckets (id, name, public) VALUES
   ('question-images', 'question-images', true),
   ('reports', 'reports', true);
+```
+
+### 5. Stripe 配置（可选）
+
+#### 5.1 创建 Stripe 账户
+1. 访问 [Stripe Dashboard](https://dashboard.stripe.com)
+2. 创建账户并完成验证
+
+#### 5.2 配置 Webhook
+1. 进入 Developers > Webhooks
+2. 添加端点：`https://your-api.onrender.com/api/subscriptions/webhook`
+3. 选择事件：
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+
+#### 5.3 获取密钥
+- Secret Key：用于后端 API
+- Publishable Key：用于前端（如需）
+- Webhook Secret：用于验证 Webhook 签名
+
+### 6. 官网部署 (Vercel) - 可选
+
+#### 6.1 配置构建设置
+```json
+{
+  "buildCommand": "yarn build:website",
+  "outputDirectory": "apps/website/dist",
+  "installCommand": "yarn install",
+  "rootDirectory": "."
+}
 ```
 
 ## 🔧 环境配置
@@ -337,8 +387,11 @@ NODE_ENV=development
 PORT=3001
 SUPABASE_URL=your_dev_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_dev_supabase_service_role_key
-OPENAI_API_KEY=your_openai_api_key
 JWT_SECRET=your_jwt_secret
+
+# AI（可选）
+OPENAI_API_KEY=your_deepseek_api_key
+OPENAI_API_BASE=https://api.deepseek.com
 ```
 
 ### 生产环境
@@ -350,12 +403,18 @@ VITE_SUPABASE_ANON_KEY=your_prod_supabase_anon_key
 
 # 后端
 NODE_ENV=production
-PORT=3001
 SUPABASE_URL=your_prod_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_prod_supabase_service_role_key
-OPENAI_API_KEY=your_openai_api_key
 JWT_SECRET=your_prod_jwt_secret
+ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-h5.vercel.app
+
+# AI（可选）
+OPENAI_API_KEY=your_deepseek_api_key
+OPENAI_API_BASE=https://api.deepseek.com
+
+# Stripe（可选）
 STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 ```
 
 ## 🚀 自动化部署
@@ -378,7 +437,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
       - run: npm install -g yarn
       - run: yarn install
       - run: yarn build:web
@@ -395,7 +454,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
       - run: npm install -g yarn
       - run: yarn install
       - run: yarn build:api
@@ -413,16 +472,15 @@ jobs:
 - **Render**: 内置监控和日志
 - **Supabase**: 内置监控和日志
 
-### 2. 错误追踪
+### 2. API 文档
+- 后端部署后，访问 `/api/docs` 查看 Swagger 文档
+- 例如：`https://quizflow-api.onrender.com/api/docs`
+
+### 3. 错误追踪
 推荐使用 Sentry：
 ```bash
 npm install @sentry/react @sentry/node
 ```
-
-### 3. 性能监控
-- 使用 Vercel Analytics
-- 配置 Supabase 监控
-- 设置 Render 监控
 
 ## 🔒 安全配置
 
@@ -439,7 +497,8 @@ npm install @sentry/react @sentry/node
 ### 3. API 安全
 - 启用 CORS 配置
 - 使用 JWT 认证
-- 实施请求频率限制
+- 实施请求频率限制（已配置：100 请求/60 秒）
+- Helmet 安全中间件（已启用）
 
 ## 🚨 故障排除
 
@@ -468,16 +527,16 @@ yarn lint
 ## 📈 性能优化
 
 ### 1. 前端优化
-- 启用代码分割
+- 启用代码分割（已配置懒加载）
 - 使用 CDN
 - 优化图片资源
 - 启用缓存
 
 ### 2. 后端优化
 - 启用数据库连接池
-- 使用 Redis 缓存
+- 使用 Redis 缓存（可选）
 - 优化数据库查询
-- 启用压缩
+- 启用压缩（已启用）
 
 ### 3. 数据库优化
 - 创建适当的索引
