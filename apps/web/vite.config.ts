@@ -31,7 +31,26 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // 生产环境关闭 sourcemap
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 第三方库分包
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-charts': ['recharts'],
+          'vendor-xlsx': ['xlsx'],
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+          ],
+        },
+      },
+    },
   },
   test: {
     globals: true,
