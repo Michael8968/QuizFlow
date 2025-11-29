@@ -14,6 +14,10 @@ export default defineConfig({
       '@/hooks': path.resolve(__dirname, './src/hooks'),
       '@/stores': path.resolve(__dirname, './src/stores'),
       '@/types': path.resolve(__dirname, './src/types'),
+      // Workspace 内本地包别名，开发时直接走源码而不是 dist
+      '@quizflow/utils': path.resolve(__dirname, '../../packages/utils/src'),
+      '@quizflow/types': path.resolve(__dirname, '../../packages/types/src'),
+      '@quizflow/validators': path.resolve(__dirname, '../../packages/validators/src'),
     },
   },
   server: {
