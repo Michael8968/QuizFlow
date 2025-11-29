@@ -15,7 +15,6 @@ export interface CreateReportData {
 }
 
 interface AnswerWithResponses extends Answer {
-  responses: Record<string, string | string[]>;
   time_spent?: number;
 }
 
