@@ -1,0 +1,59 @@
+{
+  "title": "报告",
+  "list": {
+    "title": "报告列表",
+    "empty": "暂无报告",
+    "search": "搜索报告...",
+    "total": "共 {{count}} 份报告"
+  },
+  "overview": {
+    "title": "概览",
+    "totalResponses": "答题人数",
+    "averageScore": "平均分",
+    "passRate": "及格率",
+    "highestScore": "最高分",
+    "lowestScore": "最低分",
+    "completionRate": "完成率"
+  },
+  "detail": {
+    "title": "报告详情",
+    "paperInfo": "试卷信息",
+    "statistics": "统计数据",
+    "questionAnalysis": "题目分析",
+    "respondentList": "答题者列表"
+  },
+  "chart": {
+    "scoreDistribution": "分数分布",
+    "questionAccuracy": "题目正确率",
+    "timeTrend": "答题时间趋势",
+    "difficultyAnalysis": "难度分析"
+  },
+  "respondent": {
+    "name": "姓名",
+    "email": "邮箱",
+    "score": "得分",
+    "submitTime": "提交时间",
+    "timeTaken": "用时",
+    "status": "状态",
+    "viewDetail": "查看详情"
+  },
+  "export": {
+    "title": "导出报告",
+    "format": "导出格式",
+    "excel": "Excel 表格",
+    "pdf": "PDF 文档",
+    "csv": "CSV 文件",
+    "exportSuccess": "报告导出成功",
+    "exportFailed": "报告导出失败",
+    "includeDetail": "包含详细数据",
+    "includeChart": "包含图表"
+  },
+  "filter": {
+    "dateRange": "日期范围",
+    "scoreRange": "分数范围",
+    "status": "状态",
+    "all": "全部",
+    "passed": "已通过",
+    "failed": "未通过"
+  }
+}

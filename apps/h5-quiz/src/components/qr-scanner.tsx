@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
+import { useTranslation } from '@quizflow/i18n'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
@@ -11,6 +12,7 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
+  const { t } = useTranslation(['quiz', 'common'])
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +43,7 @@ export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
         setHasPermission(true)
       } catch (err) {
         setHasPermission(false)
-        setError('无法访问摄像头，请检查权限设置')
+        setError(t('common:message.loadingError'))
         setIsScanning(false)
         return
       }
@@ -75,11 +77,11 @@ export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
         }
       )
     } catch (err) {
-      console.error('启动扫描器失败:', err)
-      setError(err instanceof Error ? err.message : '启动扫描器失败')
+      console.error('Failed to start scanner:', err)
+      setError(err instanceof Error ? err.message : t('common:message.loadingError'))
       setIsScanning(false)
     }
-  }, [onScanSuccess, onClose, stopScanning])
+  }, [onScanSuccess, onClose, stopScanning, t])
 
   useEffect(() => {
     if (!open) {
@@ -105,9 +107,9 @@ export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md w-full p-0 gap-0 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="px-6 pt-6">
-          <DialogTitle>扫描二维码</DialogTitle>
+          <DialogTitle>{t('quiz:enter.scanQR')}</DialogTitle>
           <DialogDescription>
-            将二维码对准扫描框，系统将自动识别
+            {t('quiz:enter.scanQR')}
           </DialogDescription>
         </DialogHeader>
 
@@ -123,7 +125,7 @@ export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
                   className="w-full"
                   variant="outline"
                 >
-                  重试
+                  {t('common:action.refresh')}
                 </Button>
               )}
             </div>
@@ -139,7 +141,7 @@ export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
                 )}
               </div>
               <p className="text-xs text-center text-gray-500">
-                请确保二维码清晰可见，光线充足
+                {t('common:action.loading')}
               </p>
             </div>
           )}
@@ -149,7 +151,7 @@ export function QRScanner({ open, onClose, onScanSuccess }: QRScannerProps) {
             variant="outline"
             className="w-full mt-4"
           >
-            取消
+            {t('common:action.cancel')}
           </Button>
         </div>
       </DialogContent>

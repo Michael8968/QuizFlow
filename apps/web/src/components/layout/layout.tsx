@@ -1,25 +1,26 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  FileText, 
-  BarChart3, 
-  Settings, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  FileText,
+  BarChart3,
+  Settings,
   LogOut,
   Menu,
   X
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useTranslation, LanguageSwitcher } from '@quizflow/i18n'
 
-const navigation = [
-  { name: '仪表盘', href: '/', icon: LayoutDashboard },
-  { name: '题库管理', href: '/questions', icon: BookOpen },
-  { name: '试卷管理', href: '/papers', icon: FileText },
-  { name: '成绩分析', href: '/reports', icon: BarChart3 },
-  { name: '设置', href: '/settings', icon: Settings },
+const navigationItems = [
+  { key: 'nav.dashboard', href: '/', icon: LayoutDashboard },
+  { key: 'nav.questions', href: '/questions', icon: BookOpen },
+  { key: 'nav.papers', href: '/papers', icon: FileText },
+  { key: 'nav.reports', href: '/reports', icon: BarChart3 },
+  { key: 'nav.settings', href: '/settings', icon: Settings },
 ]
 
 export function Layout() {
@@ -27,6 +28,7 @@ export function Layout() {
   const location = useLocation()
   const { user, logout } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { t } = useTranslation('common')
 
   const handleLogout = () => {
     logout()
@@ -53,11 +55,11 @@ export function Layout() {
             </Button>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
+            {navigationItems.map((item) => {
               const isActive = location.pathname === item.href
               return (
                 <button
-                  key={item.name}
+                  key={item.key}
                   onClick={() => {
                     navigate(item.href)
                     setSidebarOpen(false)
@@ -70,7 +72,7 @@ export function Layout() {
                   )}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
+                  {t(item.key)}
                 </button>
               )
             })}
@@ -96,7 +98,7 @@ export function Layout() {
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              退出登录
+              {t('auth:logout.title')}
             </Button>
           </div>
         </div>
@@ -109,11 +111,11 @@ export function Layout() {
             <h1 className="text-xl font-bold text-gray-900">QuizFlow</h1>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
+            {navigationItems.map((item) => {
               const isActive = location.pathname === item.href
               return (
                 <button
-                  key={item.name}
+                  key={item.key}
                   onClick={() => navigate(item.href)}
                   className={cn(
                     'flex w-full items-center px-2 py-2 text-sm font-medium rounded-md',
@@ -123,7 +125,7 @@ export function Layout() {
                   )}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
+                  {t(item.key)}
                 </button>
               )
             })}
@@ -149,7 +151,7 @@ export function Layout() {
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              退出登录
+              {t('auth:logout.title')}
             </Button>
           </div>
         </div>
@@ -170,10 +172,11 @@ export function Layout() {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1" />
             <div className="flex items-center gap-x-4 lg:gap-x-6">
+              <LanguageSwitcher className="flex items-center" />
               <span className="text-sm text-gray-500">
-                {user?.plan === 'free' ? '免费版' : 
-                 user?.plan === 'professional' ? '专业版' :
-                 user?.plan === 'institution' ? '机构版' : 'AI增强版'}
+                {user?.plan === 'free' ? t('settings:subscription.free') :
+                 user?.plan === 'professional' ? t('settings:subscription.pro') :
+                 user?.plan === 'institution' ? t('settings:subscription.enterprise') : 'AI Enhanced'}
               </span>
             </div>
           </div>

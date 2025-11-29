@@ -1,0 +1,81 @@
+{
+  "title": "Papers",
+  "list": {
+    "title": "Paper List",
+    "empty": "No papers yet",
+    "create": "Create Paper",
+    "search": "Search papers...",
+    "total": "{{count}} papers total"
+  },
+  "status": {
+    "label": "Status",
+    "draft": "Draft",
+    "published": "Published",
+    "closed": "Closed",
+    "archived": "Archived"
+  },
+  "form": {
+    "title": "Paper Title",
+    "titlePlaceholder": "Enter paper title",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter paper description",
+    "duration": "Duration (minutes)",
+    "durationPlaceholder": "Enter exam duration",
+    "totalScore": "Total Score",
+    "passScore": "Pass Score",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "questions": "Questions",
+    "questionsCount": "{{count}} questions",
+    "addQuestions": "Add Questions",
+    "selectQuestions": "Select Questions",
+    "randomOrder": "Shuffle Questions",
+    "showAnswer": "Show Answers",
+    "allowRetake": "Allow Retake",
+    "maxAttempts": "Max Attempts"
+  },
+  "action": {
+    "create": "Create Paper",
+    "edit": "Edit Paper",
+    "delete": "Delete Paper",
+    "preview": "Preview Paper",
+    "publish": "Publish Paper",
+    "unpublish": "Unpublish",
+    "duplicate": "Duplicate Paper",
+    "share": "Share Paper",
+    "viewReport": "View Report",
+    "generateQR": "Generate QR Code"
+  },
+  "share": {
+    "title": "Share Paper",
+    "link": "Paper Link",
+    "copyLink": "Copy Link",
+    "qrCode": "QR Code",
+    "downloadQR": "Download QR Code",
+    "password": "Access Password",
+    "setPassword": "Set Password",
+    "noPassword": "No Password",
+    "expiresAt": "Valid Until"
+  },
+  "message": {
+    "createSuccess": "Paper created successfully",
+    "createFailed": "Failed to create paper",
+    "updateSuccess": "Paper updated successfully",
+    "updateFailed": "Failed to update paper",
+    "deleteSuccess": "Paper deleted successfully",
+    "deleteFailed": "Failed to delete paper",
+    "publishSuccess": "Paper published successfully",
+    "publishFailed": "Failed to publish paper",
+    "confirmDelete": "Are you sure you want to delete this paper?",
+    "copyLinkSuccess": "Link copied to clipboard"
+  },
+  "validation": {
+    "titleRequired": "Paper title is required",
+    "durationRequired": "Duration is required",
+    "durationPositive": "Duration must be greater than 0",
+    "questionsRequired": "Please add at least one question",
+    "startTimeRequired": "Start time is required",
+    "endTimeRequired": "End time is required",
+    "endTimeAfterStart": "End time must be after start time"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "title": "Settings",
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "email": "Email",
+    "avatar": "Avatar",
+    "changeAvatar": "Change Avatar",
+    "updateSuccess": "Profile updated successfully",
+    "updateFailed": "Failed to update profile"
+  },
+  "account": {
+    "title": "Account Settings",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "passwordChanged": "Password changed successfully",
+    "deleteAccount": "Delete Account",
+    "deleteAccountWarning": "Deleting your account will permanently remove all your data and cannot be undone.",
+    "confirmDelete": "Confirm Delete Account"
+  },
+  "notification": {
+    "title": "Notification Settings",
+    "email": "Email Notifications",
+    "emailDesc": "Receive email notifications",
+    "newResponse": "New Response",
+    "newResponseDesc": "Notify me when someone completes a quiz",
+    "reportReady": "Report Ready",
+    "reportReadyDesc": "Notify me when a report is generated"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "language": "Language",
+    "languageDesc": "Select interface language"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "currentPlan": "Current Plan",
+    "free": "Free",
+    "pro": "Pro",
+    "enterprise": "Enterprise",
+    "upgrade": "Upgrade Plan",
+    "manage": "Manage Subscription",
+    "billingHistory": "Billing History",
+    "nextBilling": "Next Billing Date",
+    "cancel": "Cancel Subscription"
+  },
+  "api": {
+    "title": "API Settings",
+    "apiKey": "API Key",
+    "generateKey": "Generate Key",
+    "copyKey": "Copy Key",
+    "regenerateKey": "Regenerate",
+    "keyWarning": "Keep your API key secure and do not share it with others."
+  },
+  "danger": {
+    "title": "Danger Zone",
+    "clearData": "Clear All Data",
+    "clearDataWarning": "This will delete all your questions, papers, and reports.",
+    "confirmClear": "Confirm Clear"
+  }
+}

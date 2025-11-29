@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from '@quizflow/i18n'
 import { useQuizStore } from '@/stores/quiz'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { Clock, CheckCircle, Circle } from 'lucide-react'
 import { api } from '@/lib/api'
 
 export function QuizPage() {
+  const { t } = useTranslation(['quiz', 'common'])
   const { quizId } = useParams()
   const navigate = useNavigate()
   const { 
@@ -127,12 +129,12 @@ export function QuizPage() {
       // 标记为已提交
       setSubmitted(true)
 
-      // 跳转到结果页面
+      // Navigate to result page
       navigate(`/result/${quizId}`)
     } catch (error) {
-      console.error('提交答案失败:', error)
-      setError(error instanceof Error ? error.message : '提交答案失败，请稍后重试')
-      // 即使提交失败，也跳转到结果页面（显示错误信息）
+      console.error('Submit answer failed:', error)
+      setError(error instanceof Error ? error.message : t('common:message.operationFailed'))
+      // Even if submission fails, navigate to result page (show error message)
       navigate(`/result/${quizId}`)
     } finally {
       setIsSubmitting(false)
@@ -193,7 +195,7 @@ export function QuizPage() {
   }
 
   if (!quiz || currentQuestionIndex === null) {
-    return <div>加载中...</div>
+    return <div>{t('common:action.loading')}</div>
   }
 
   const question = quiz.questions[currentQuestionIndex]
@@ -220,21 +222,21 @@ export function QuizPage() {
             />
           </div>
           <p className="text-sm text-gray-600 mt-2">
-            第 {currentQuestionIndex + 1} 题，共 {quiz.questions.length} 题
+            {t('quiz:taking.question', { current: currentQuestionIndex + 1, total: quiz.questions.length })}
           </p>
         </div>
 
-        {/* 题目卡片 */}
+        {/* Question card */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">
               {question.content}
             </CardTitle>
             <p className="text-sm text-gray-500">
-              {question.type === 'single' && '单选题'}
-              {question.type === 'multiple' && '多选题'}
-              {question.type === 'fill' && '填空题'}
-              （{question.points} 分）
+              {question.type === 'single' && t('common:status.info')}
+              {question.type === 'multiple' && t('common:status.info')}
+              {question.type === 'fill' && t('common:status.info')}
+              ({question.points} {t('quiz:review.score')})
             </p>
           </CardHeader>
           <CardContent>
@@ -243,7 +245,7 @@ export function QuizPage() {
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="请输入答案"
+                  placeholder={t('quiz:enter.paperCodePlaceholder')}
                   value={selectedAnswers[0] || ''}
                   onChange={(e) => setSelectedAnswers([e.target.value])}
                 />
@@ -288,7 +290,7 @@ export function QuizPage() {
           </CardContent>
         </Card>
 
-        {/* 操作按钮 */}
+        {/* Action buttons */}
         <div className="flex justify-between">
           <Button
             variant="outline"
@@ -302,14 +304,14 @@ export function QuizPage() {
             }}
             disabled={currentQuestionIndex === 0}
           >
-            上一题
+            {t('quiz:taking.prev')}
           </Button>
-          
+
           <Button
             onClick={currentQuestionIndex === quiz.questions.length - 1 ? handleSubmit : handleNext}
             disabled={selectedAnswers.length === 0 || isSubmitting}
           >
-            {isSubmitting ? '提交中...' : currentQuestionIndex === quiz.questions.length - 1 ? '提交答案' : '下一题'}
+            {isSubmitting ? t('common:status.processing') : currentQuestionIndex === quiz.questions.length - 1 ? t('quiz:taking.submit') : t('quiz:taking.next')}
           </Button>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from '@quizflow/i18n'
 import { useQuizStore } from '@/stores/quiz'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,10 +13,12 @@ import { api } from '@/lib/api'
 import type { QuizWithAnswers } from '@quizflow/types'
 import { QRScanner } from '@/components/qr-scanner'
 
+// Note: Validation messages are still in Chinese in the schema
+// They should be handled by the form validation error display
 const enterQuizSchema = z.object({
-  quizCode: z.string().min(1, '请输入考试码'),
-  studentName: z.string().min(1, '请输入姓名'),
-  studentEmail: z.string().email('请输入有效的邮箱地址').optional().or(z.literal('')),
+  quizCode: z.string().min(1),
+  studentName: z.string().min(1),
+  studentEmail: z.string().email().optional().or(z.literal('')),
 })
 
 type EnterQuizForm = z.infer<typeof enterQuizSchema>
@@ -62,6 +65,7 @@ function transformPaperToQuiz(paper: any): QuizWithAnswers {
 }
 
 export function EnterQuiz() {
+  const { t } = useTranslation(['quiz', 'common'])
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { setQuiz, setStudentInfo } = useQuizStore()
@@ -115,11 +119,11 @@ export function EnterQuiz() {
           setPaperInfo(quiz)
         } else {
           setPaperInfo(null)
-          setError('未找到该考试码对应的试卷')
+          setError(t('quiz:enter.paperNotFound'))
         }
       } catch (err) {
         setPaperInfo(null)
-        setError(err instanceof Error ? err.message : '获取试卷信息失败')
+        setError(err instanceof Error ? err.message : t('common:message.loadingError'))
       }
     }, 500)
 
@@ -137,9 +141,9 @@ export function EnterQuiz() {
     
     try {
       const paper = await api.getPaperByCode(data.quizCode)
-      
+
       if (!paper) {
-        setError('未找到该考试码对应的试卷，请检查考试码是否正确')
+        setError(t('quiz:enter.paperNotFound'))
         setIsLoading(false)
         return
       }
@@ -149,7 +153,7 @@ export function EnterQuiz() {
       setQuiz(quiz)
       navigate(`/quiz/${quiz.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '获取试卷失败，请稍后重试')
+      setError(err instanceof Error ? err.message : t('common:message.loadingError'))
       setIsLoading(false)
     }
   }
@@ -167,30 +171,30 @@ export function EnterQuiz() {
           <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
             <BookOpen className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">QuizFlow</h1>
-          <p className="text-gray-600">在线考试系统</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('common:app.name')}</h1>
+          <p className="text-gray-600">{t('quiz:enter.title')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>进入考试</CardTitle>
+            <CardTitle>{t('quiz:enter.title')}</CardTitle>
             <CardDescription>
-              输入考试码和您的信息以开始答题
+              {t('quiz:enter.paperCodePlaceholder')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  考试码
+                  {t('quiz:enter.paperCode')}
                 </label>
                 <Input
-                  placeholder="请输入考试码"
+                  placeholder={t('quiz:enter.paperCodePlaceholder')}
                   {...register('quizCode')}
                   className="mobile-input"
                 />
                 {errors.quizCode && (
-                  <p className="mt-1 text-sm text-red-600">{errors.quizCode.message}</p>
+                  <p className="mt-1 text-sm text-red-600">{t('quiz:enter.invalidCode')}</p>
                 )}
                 {error && !errors.quizCode && (
                   <p className="mt-1 text-sm text-red-600">{error}</p>
@@ -199,30 +203,30 @@ export function EnterQuiz() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  姓名 *
+                  {t('quiz:info.name')} *
                 </label>
                 <Input
-                  placeholder="请输入您的姓名"
+                  placeholder={t('quiz:info.namePlaceholder')}
                   {...register('studentName')}
                   className="mobile-input"
                 />
                 {errors.studentName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.studentName.message}</p>
+                  <p className="mt-1 text-sm text-red-600">{t('quiz:info.namePlaceholder')}</p>
                 )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  邮箱（可选）
+                  {t('quiz:info.email')}
                 </label>
                 <Input
                   type="email"
-                  placeholder="请输入您的邮箱"
+                  placeholder={t('quiz:info.emailPlaceholder')}
                   {...register('studentEmail')}
                   className="mobile-input"
                 />
                 {errors.studentEmail && (
-                  <p className="mt-1 text-sm text-red-600">{errors.studentEmail.message}</p>
+                  <p className="mt-1 text-sm text-red-600">{t('quiz:info.emailPlaceholder')}</p>
                 )}
               </div>
 
@@ -231,22 +235,22 @@ export function EnterQuiz() {
                 className="mobile-button"
                 disabled={isLoading}
               >
-                {isLoading ? '进入中...' : '开始考试'}
+                {isLoading ? t('common:action.loading') : t('quiz:info.startQuiz')}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500 mb-4">或者</p>
-          <Button 
-            variant="outline" 
+          <p className="text-sm text-gray-500 mb-4">{t('common:action.more')}</p>
+          <Button
+            variant="outline"
             className="w-full"
             onClick={() => setIsQRScannerOpen(true)}
             type="button"
           >
             <QrCode className="mr-2 h-4 w-4" />
-            扫描二维码进入
+            {t('quiz:enter.scanQR')}
           </Button>
         </div>
 
@@ -257,7 +261,7 @@ export function EnterQuiz() {
           onScanSuccess={handleQRScanSuccess}
         />
 
-        {/* 考试信息预览 */}
+        {/* Paper info preview */}
         {paperInfo && (
           <Card className="mt-6">
             <CardHeader>
@@ -270,17 +274,17 @@ export function EnterQuiz() {
               <div className="space-y-3">
                 <div className="flex items-center text-sm text-gray-600">
                   <BookOpen className="mr-2 h-4 w-4" />
-                  <span>题目数量: {paperInfo.questions.length} 题</span>
+                  <span>{t('quiz:info.totalQuestions')}: {paperInfo.questions.length}</span>
                 </div>
                 {paperInfo.settings.time_limit && (
                   <div className="flex items-center text-sm text-gray-600">
                     <Clock className="mr-2 h-4 w-4" />
-                    <span>考试时长: {paperInfo.settings.time_limit} 分钟</span>
+                    <span>{t('quiz:info.duration')}: {t('quiz:info.durationValue', { minutes: paperInfo.settings.time_limit })}</span>
                   </div>
                 )}
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="mr-2 h-4 w-4" />
-                  <span>总分: {paperInfo.questions.reduce((sum, q) => sum + q.points, 0)} 分</span>
+                  <span>{t('quiz:info.totalScore')}: {paperInfo.questions.reduce((sum, q) => sum + q.points, 0)}</span>
                 </div>
               </div>
             </CardContent>

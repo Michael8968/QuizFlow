@@ -1,0 +1,67 @@
+{
+  "title": "设置",
+  "profile": {
+    "title": "个人资料",
+    "name": "姓名",
+    "email": "邮箱",
+    "avatar": "头像",
+    "changeAvatar": "更换头像",
+    "updateSuccess": "个人资料更新成功",
+    "updateFailed": "个人资料更新失败"
+  },
+  "account": {
+    "title": "账户设置",
+    "changePassword": "修改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "passwordChanged": "密码修改成功",
+    "deleteAccount": "删除账户",
+    "deleteAccountWarning": "删除账户后，所有数据将被永久删除且无法恢复。",
+    "confirmDelete": "确认删除账户"
+  },
+  "notification": {
+    "title": "通知设置",
+    "email": "邮件通知",
+    "emailDesc": "接收邮件通知",
+    "newResponse": "新答题通知",
+    "newResponseDesc": "有人完成答题时通知我",
+    "reportReady": "报告就绪",
+    "reportReadyDesc": "报告生成完成时通知我"
+  },
+  "appearance": {
+    "title": "外观设置",
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "language": "语言",
+    "languageDesc": "选择界面语言"
+  },
+  "subscription": {
+    "title": "订阅管理",
+    "currentPlan": "当前套餐",
+    "free": "免费版",
+    "pro": "专业版",
+    "enterprise": "企业版",
+    "upgrade": "升级套餐",
+    "manage": "管理订阅",
+    "billingHistory": "账单历史",
+    "nextBilling": "下次扣款日期",
+    "cancel": "取消订阅"
+  },
+  "api": {
+    "title": "API 设置",
+    "apiKey": "API 密钥",
+    "generateKey": "生成密钥",
+    "copyKey": "复制密钥",
+    "regenerateKey": "重新生成",
+    "keyWarning": "请妥善保管您的 API 密钥，不要泄露给他人。"
+  },
+  "danger": {
+    "title": "危险操作",
+    "clearData": "清除所有数据",
+    "clearDataWarning": "此操作将清除所有题目、试卷和报告数据。",
+    "confirmClear": "确认清除"
+  }
+}

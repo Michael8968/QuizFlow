@@ -1,42 +1,44 @@
 import { Card } from '@/components/ui/card'
 import { GraduationCap, User, Building2, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from '@quizflow/i18n'
 
 export function UseCases() {
+  const { t } = useTranslation('website')
   const useCases = [
     {
       icon: GraduationCap,
-      title: '教育机构',
-      painPoint: '传统考试组织繁琐，阅卷工作量大，数据分析困难',
-      solution: '使用QuizFlow的智能组卷和自动评分功能，大幅减少教师工作量，通过数据分析报告深入了解学生学习情况',
+      title: t('useCases.education.title'),
+      painPoint: 'Traditional exam organization is cumbersome, grading workload is heavy, and data analysis is difficult',
+      solution: 'Use QuizFlow\'s intelligent paper generation and automatic grading to reduce teacher workload and gain insights into student learning through data analysis',
       results: [
-        '组卷时间减少90%',
-        '阅卷效率提升10倍',
-        '获得详细的学习数据分析',
-        '提升教学质量和效率',
+        '90% reduction in paper creation time',
+        '10x improvement in grading efficiency',
+        'Detailed learning data analysis',
+        'Enhanced teaching quality and efficiency',
       ],
     },
     {
       icon: User,
-      title: '教师个人',
-      painPoint: '出题耗时，缺乏数据分析工具，难以跟踪学生学习进度',
-      solution: '利用AI智能出题功能快速生成题目，通过在线答卷系统收集数据，自动生成分析报告',
+      title: 'Individual Teachers',
+      painPoint: 'Time-consuming question creation, lack of data analysis tools, difficulty tracking student progress',
+      solution: 'Use AI question generation to quickly create questions, collect data through online quiz system, and automatically generate analysis reports',
       results: [
-        '出题时间从数小时缩短到几分钟',
-        '实时跟踪学生学习进度',
-        '精准识别薄弱知识点',
-        '个性化教学建议',
+        'Question creation time reduced from hours to minutes',
+        'Real-time student progress tracking',
+        'Accurate identification of weak knowledge points',
+        'Personalized teaching recommendations',
       ],
     },
     {
       icon: Building2,
-      title: '企业培训',
-      painPoint: '培训效果难以量化，缺乏有效的评估工具，员工学习数据分散',
-      solution: '通过QuizFlow建立企业培训题库，定期组织在线考试，统一管理培训数据和效果评估',
+      title: t('useCases.enterprise.title'),
+      painPoint: 'Training effectiveness is hard to quantify, lack of effective assessment tools, scattered employee learning data',
+      solution: 'Build enterprise training question bank through QuizFlow, organize regular online exams, and centrally manage training data and effectiveness evaluation',
       results: [
-        '量化培训效果',
-        '统一管理培训数据',
-        '识别培训重点和难点',
-        '提升培训ROI',
+        'Quantify training effectiveness',
+        'Centralized training data management',
+        'Identify training priorities and difficulties',
+        'Improve training ROI',
       ],
     },
   ]
@@ -47,10 +49,10 @@ export function UseCases() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            使用场景
+            {t('useCases.title')}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            无论您是教育机构、教师个人还是企业，QuizFlow 都能满足您的需求
+            {t('useCases.subtitle')}
           </p>
         </div>
 
@@ -75,19 +77,19 @@ export function UseCases() {
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-semibold text-red-600 mb-2">
-                          痛点
+                          Pain Points
                         </h3>
                         <p className="text-gray-700">{useCase.painPoint}</p>
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-primary mb-2">
-                          解决方案
+                          Solution
                         </h3>
                         <p className="text-gray-700">{useCase.solution}</p>
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-green-600 mb-3">
-                          成果
+                          Results
                         </h3>
                         <ul className="space-y-2">
                           {useCase.results.map((result, idx) => (

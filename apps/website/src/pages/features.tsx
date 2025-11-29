@@ -1,9 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Database, 
-  Sparkles, 
-  Smartphone, 
-  BarChart3, 
+import {
+  Database,
+  Sparkles,
+  Smartphone,
+  BarChart3,
   CreditCard,
   Users
 } from 'lucide-react'
@@ -17,8 +17,10 @@ import reportImage from '@/assets/image/report.png'
 import reportVideo from '@/assets/video/report.mp4'
 import subscriptionImage from '@/assets/image/subscription.jpg'
 import collaborationImage from '@/assets/image/collaboration.jpg'
+import { useTranslation } from '@quizflow/i18n'
 
 export function Features() {
+  const { t } = useTranslation('website')
   const features = [
     {
       icon: Database,
@@ -106,10 +108,10 @@ export function Features() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            强大的功能
+            {t('features.title')}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            从题库管理到成绩分析，QuizFlow 提供完整的测验解决方案
+            {t('features.subtitle')}
           </p>
         </div>
 
@@ -162,7 +164,7 @@ export function Features() {
                         autoPlay
                       >
                         <source src={feature.video} type="video/mp4" />
-                        您的浏览器不支持视频播放。
+                        Your browser does not support video playback.
                       </video>
                     ) : (
                       <img

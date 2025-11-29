@@ -1,0 +1,84 @@
+{
+  "title": "题库",
+  "list": {
+    "title": "题目列表",
+    "empty": "暂无题目",
+    "create": "创建题目",
+    "import": "导入题目",
+    "export": "导出题目",
+    "search": "搜索题目...",
+    "filter": "筛选",
+    "total": "共 {{count}} 道题目"
+  },
+  "type": {
+    "label": "题目类型",
+    "single": "单选题",
+    "multiple": "多选题",
+    "trueFalse": "判断题",
+    "fillBlank": "填空题",
+    "shortAnswer": "简答题",
+    "essay": "论述题"
+  },
+  "difficulty": {
+    "label": "难度",
+    "easy": "简单",
+    "medium": "中等",
+    "hard": "困难"
+  },
+  "form": {
+    "title": "题目标题",
+    "titlePlaceholder": "请输入题目标题",
+    "content": "题目内容",
+    "contentPlaceholder": "请输入题目内容",
+    "options": "选项",
+    "optionPlaceholder": "请输入选项内容",
+    "addOption": "添加选项",
+    "answer": "答案",
+    "answerPlaceholder": "请输入答案",
+    "correctAnswer": "正确答案",
+    "analysis": "题目解析",
+    "analysisPlaceholder": "请输入题目解析",
+    "tags": "标签",
+    "tagsPlaceholder": "输入标签，按回车添加",
+    "category": "分类",
+    "categoryPlaceholder": "选择分类",
+    "score": "分值",
+    "scorePlaceholder": "请输入分值"
+  },
+  "action": {
+    "create": "创建题目",
+    "edit": "编辑题目",
+    "delete": "删除题目",
+    "preview": "预览题目",
+    "duplicate": "复制题目",
+    "addToPaper": "添加到试卷"
+  },
+  "message": {
+    "createSuccess": "题目创建成功",
+    "createFailed": "题目创建失败",
+    "updateSuccess": "题目更新成功",
+    "updateFailed": "题目更新失败",
+    "deleteSuccess": "题目删除成功",
+    "deleteFailed": "题目删除失败",
+    "confirmDelete": "确定要删除这道题目吗？"
+  },
+  "ai": {
+    "generate": "AI 生成题目",
+    "generating": "AI 正在生成题目...",
+    "generateSuccess": "题目生成成功",
+    "generateFailed": "题目生成失败",
+    "topic": "主题",
+    "topicPlaceholder": "请输入题目主题",
+    "count": "生成数量",
+    "countPlaceholder": "请输入生成数量"
+  },
+  "validation": {
+    "titleRequired": "请输入题目标题",
+    "contentRequired": "请输入题目内容",
+    "typeRequired": "请选择题目类型",
+    "answerRequired": "请设置正确答案",
+    "optionsRequired": "请至少添加 {{count}} 个选项",
+    "scoreRequired": "请输入分值",
+    "scorePositive": "分值必须大于 0"
+  }
+}

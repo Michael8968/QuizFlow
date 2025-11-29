@@ -4,8 +4,10 @@ import { Menu, X, User, LogOut, ChevronDown, ExternalLink } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useAuthStore } from '@/stores/auth'
 import { supabase } from '@/lib/supabase'
+import { useTranslation } from '@quizflow/i18n'
 
 export function Navbar() {
+  const { t } = useTranslation('common')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const location = useLocation()
@@ -115,12 +117,12 @@ export function Navbar() {
   }
 
   const navItems = [
-    { name: '首页', path: '/' },
-    { name: '功能', path: '/features' },
-    { name: '使用场景', path: '/use-cases' },
-    { name: '价格', path: '/pricing' },
-    { name: '关于我们', path: '/about' },
-    { name: '常见问题', path: '/faq' },
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.features'), path: '/features' },
+    { name: 'Use Cases', path: '/use-cases' },
+    { name: t('nav.pricing'), path: '/pricing' },
+    { name: t('nav.about'), path: '/about' },
+    { name: t('nav.faq'), path: '/faq' },
   ]
 
   const isActive = (path: string) => location.pathname === path
@@ -175,14 +177,14 @@ export function Navbar() {
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      <span>进入应用</span>
+                      <span>Go to App</span>
                     </button>
                     <button
                       onClick={handleLogout}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                     >
                       <LogOut className="h-4 w-4" />
-                      <span>退出登录</span>
+                      <span>Logout</span>
                     </button>
                   </div>
                 )}
@@ -190,9 +192,9 @@ export function Navbar() {
             ) : (
               <>
                 <Button variant="ghost" size="sm" onClick={handleGoToApp}>
-                  登录
+                  Login
                 </Button>
-                <Button size="sm" onClick={handleGoToApp}>免费试用</Button>
+                <Button size="sm" onClick={handleGoToApp}>Free Trial</Button>
               </>
             )}
           </div>
@@ -242,7 +244,7 @@ export function Navbar() {
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center space-x-2"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    <span>进入应用</span>
+                    <span>Go to App</span>
                   </button>
                   <button
                     onClick={() => {
@@ -252,29 +254,29 @@ export function Navbar() {
                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center space-x-2"
                   >
                     <LogOut className="h-4 w-4" />
-                    <span>退出登录</span>
+                    <span>Logout</span>
                   </button>
                 </>
               ) : (
                 <>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="w-full"
                     onClick={() => {
                       handleGoToApp()
                       setMobileMenuOpen(false)
                     }}
                   >
-                    登录
+                    Login
                   </Button>
-                  <Button 
+                  <Button
                     className="w-full"
                     onClick={() => {
                       handleGoToApp()
                       setMobileMenuOpen(false)
                     }}
                   >
-                    免费试用
+                    Free Trial
                   </Button>
                 </>
               )}

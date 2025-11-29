@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Wifi, WifiOff, CloudOff, RefreshCw, Check, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@quizflow/i18n';
 import { useSyncStatus } from '../hooks/use-network-status';
 import { cn } from '../lib/utils';
 
@@ -16,23 +17,24 @@ export function OfflineIndicator({
   className,
   showPendingCount = true,
 }: OfflineIndicatorProps) {
+  const { t } = useTranslation(['common']);
   const { isOnline, pendingCount, isSyncing, manualSync } = useSyncStatus();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('info');
 
-  // 网络状态变化时显示提示
+  // Show notification when network status changes
   useEffect(() => {
     if (!isOnline) {
-      setToastMessage('网络已断开，答题进度将自动保存到本地');
+      setToastMessage(t('common:status.info'));
       setToastType('info');
       setShowToast(true);
     } else if (pendingCount > 0) {
-      setToastMessage('网络已恢复，正在同步...');
+      setToastMessage(t('common:status.processing'));
       setToastType('info');
       setShowToast(true);
     }
-  }, [isOnline, pendingCount]);
+  }, [isOnline, pendingCount, t]);
 
   // 自动隐藏提示
   useEffect(() => {
@@ -47,11 +49,11 @@ export function OfflineIndicator({
 
     try {
       await manualSync();
-      setToastMessage('同步成功！');
+      setToastMessage(t('common:message.operationSuccess'));
       setToastType('success');
       setShowToast(true);
     } catch {
-      setToastMessage('同步失败，请稍后重试');
+      setToastMessage(t('common:message.operationFailed'));
       setToastType('error');
       setShowToast(true);
     }
@@ -82,13 +84,13 @@ export function OfflineIndicator({
               <CloudOff className="h-4 w-4" />
             )}
             {showPendingCount && pendingCount > 0 && (
-              <span>{pendingCount} 条待同步</span>
+              <span>{pendingCount} {t('common:status.pending')}</span>
             )}
             {!isSyncing && pendingCount > 0 && (
               <button
                 onClick={handleManualSync}
                 className="ml-1 rounded-full p-1 hover:bg-yellow-200 transition-colors"
-                title="点击同步"
+                title={t('common:action.refresh')}
               >
                 <RefreshCw className="h-3 w-3" />
               </button>
@@ -97,7 +99,7 @@ export function OfflineIndicator({
         ) : (
           <>
             <WifiOff className="h-4 w-4" />
-            <span>离线模式</span>
+            <span>{t('common:status.info')}</span>
           </>
         )}
       </div>
@@ -125,10 +127,11 @@ export function OfflineIndicator({
 }
 
 /**
- * 网络状态徽章
- * 简洁的小图标显示
+ * Network status badge
+ * Simple icon display
  */
 export function NetworkBadge({ className }: { className?: string }) {
+  const { t } = useTranslation(['common']);
   const { isOnline, pendingCount } = useSyncStatus();
 
   return (
@@ -144,7 +147,7 @@ export function NetworkBadge({ className }: { className?: string }) {
       ) : (
         <WifiOff className="h-3 w-3" />
       )}
-      {!isOnline && <span>离线</span>}
+      {!isOnline && <span>{t('common:status.info')}</span>}
       {isOnline && pendingCount > 0 && (
         <span className="ml-1 rounded-full bg-yellow-500 px-1.5 text-white">
           {pendingCount}

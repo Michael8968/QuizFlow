@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
+    "@quizflow/i18n": "*",
     "@quizflow/types": "*",
     "@quizflow/utils": "*",
     "@quizflow/validators": "*",
