@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { User, CreditCard, Bell, Shield, HelpCircle, Loader2 } from 'lucide-react'
+import { User, CreditCard, Bell, Shield, HelpCircle, Loader2, MessageSquarePlus } from 'lucide-react'
 import { useAuth } from '@/components/auth/auth-provider'
 import { useAuthStore } from '@/stores/auth'
 import { supabase } from '@/lib/api'
@@ -14,6 +14,7 @@ import { api } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PricingDialog } from '@/components/pricing-dialog'
+import { FeedbackDialog } from '@/components/feedback-dialog'
 import { Question, Paper } from '@/types'
 
 interface ProfileFormData {
@@ -43,6 +44,7 @@ export function Settings() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showPricingDialog, setShowPricingDialog] = useState(false)
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
   const [isManagingSubscription, setIsManagingSubscription] = useState(false)
   
   // 通知设置状态
@@ -784,6 +786,14 @@ export function Settings() {
               >
                 联系支持
               </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowFeedbackDialog(true)}
+              >
+                <MessageSquarePlus className="mr-2 h-4 w-4" />
+                提交反馈
+              </Button>
             </CardContent>
           </Card>
 
@@ -833,6 +843,12 @@ export function Settings() {
         open={showPricingDialog}
         onOpenChange={setShowPricingDialog}
         currentPlan={user?.plan}
+      />
+
+      {/* 反馈对话框 */}
+      <FeedbackDialog
+        open={showFeedbackDialog}
+        onOpenChange={setShowFeedbackDialog}
       />
     </div>
   )

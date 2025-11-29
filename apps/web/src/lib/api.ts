@@ -239,6 +239,28 @@ class ApiClient {
     })
   }
 
+  // 反馈相关
+  async submitFeedback(feedback: {
+    type: string
+    title: string
+    content: string
+    rating?: number
+    user_email?: string
+    user_name?: string
+  }) {
+    return this.request('/feedback', {
+      method: 'POST',
+      body: JSON.stringify(feedback),
+    })
+  }
+
+  async getFeedbacks(params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params?.page) searchParams.set('page', params.page.toString())
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    return this.request(`/feedback?${searchParams}`)
+  }
+
   // 旧版兼容
   async createSubscription(plan: string) {
     return this.createCheckoutSession(plan, 'monthly')

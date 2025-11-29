@@ -81,3 +81,13 @@ export type {
   GeneratedQuestion,
   GenerateQuestionsResponse,
 } from './ai';
+
+// Feedback types
+export type {
+  FeedbackType,
+  FeedbackStatus,
+  FeedbackBase,
+  Feedback,
+  CreateFeedbackDto,
+  UpdateFeedbackDto,
+} from './feedback';
