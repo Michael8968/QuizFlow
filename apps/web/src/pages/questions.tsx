@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Sparkles } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Sparkles, FileUp } from 'lucide-react'
 import { getQuestionTypeLabel, getDifficultyColor } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { Question } from '@/types'
@@ -11,6 +11,7 @@ import { QuestionFormDialog } from '@/components/question-form-dialog'
 import { QuestionDetailDialog } from '@/components/question-detail-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AiGenerateDialog } from '@/components/ai-generate-dialog'
+import { ImportExportDialog } from '@/components/import-export-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/components/auth/auth-provider'
 
@@ -21,6 +22,7 @@ export function Questions() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
+  const [isImportExportDialogOpen, setIsImportExportDialogOpen] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null)
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null)
@@ -155,6 +157,15 @@ export function Questions() {
     await batchCreateMutation.mutateAsync(questions)
   }
 
+  // 处理导入的题目
+  const handleImportQuestions = async (importedQuestions: Partial<Question>[]) => {
+    if (importedQuestions.length === 0) {
+      return
+    }
+    await batchCreateMutation.mutateAsync(importedQuestions as Question[])
+    setIsImportExportDialogOpen(false)
+  }
+
   const questions = data || []
 
   // 客户端筛选
@@ -218,6 +229,15 @@ export function Questions() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsImportExportDialogOpen(true)}
+            className="flex-1 sm:flex-none"
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            <span className="hidden xs:inline">导入导出</span>
+            <span className="xs:hidden">导入</span>
+          </Button>
           <Button
             variant="outline"
             onClick={() => setIsAiDialogOpen(true)}
@@ -428,6 +448,14 @@ export function Questions() {
         onOpenChange={setIsAiDialogOpen}
         onQuestionsGenerated={handleAiQuestionsGenerated}
         userPlan={user?.plan}
+      />
+
+      {/* 导入导出对话框 */}
+      <ImportExportDialog
+        open={isImportExportDialogOpen}
+        onOpenChange={setIsImportExportDialogOpen}
+        questions={questions}
+        onImport={handleImportQuestions}
       />
     </div>
   )

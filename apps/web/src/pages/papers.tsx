@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Edit, Trash2, Eye, Copy, BarChart3, Loader2, QrCode } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Copy, BarChart3, Loader2, QrCode, Download } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { Paper, Question } from '@/types'
 import { PaperFormDialog } from '@/components/papers/paper-form-dialog'
 import { PaperPreviewDialog } from '@/components/papers/paper-preview-dialog'
 import { QRCodeDialog } from '@/components/papers/qr-code-dialog'
+import { PaperExportDialog } from '@/components/papers/paper-export-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/auth'
@@ -29,6 +30,7 @@ export function Papers() {
   const [previewingPaper, setPreviewingPaper] = useState<Paper | null>(null)
   const [deletingPaperId, setDeletingPaperId] = useState<string | null>(null)
   const [qrCodePaper, setQrCodePaper] = useState<Paper | null>(null)
+  const [exportingPaper, setExportingPaper] = useState<Paper | null>(null)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -297,6 +299,10 @@ export function Papers() {
     setPreviewingPaper(paper)
   }
 
+  const handleExport = (paper: Paper) => {
+    setExportingPaper(paper)
+  }
+
   const handleViewReport = (paperId: string) => {
     // 权限检查：确保只能查看自己试卷的报告
     const paper = papers.find(p => p.id === paperId)
@@ -526,6 +532,15 @@ export function Papers() {
                           variant="outline"
                           size="sm"
                           className="h-8 w-8 p-0"
+                          onClick={() => handleExport(paper)}
+                          title="导出试卷"
+                        >
+                          <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={() => handleCopy(paper)}
                           disabled={copyMutation.isPending}
                           title="复制试卷"
@@ -624,6 +639,19 @@ export function Papers() {
           }}
           quizCode={qrCodePaper.quiz_code}
           paperTitle={qrCodePaper.title}
+        />
+      )}
+
+      {/* 导出对话框 */}
+      {exportingPaper && (
+        <PaperExportDialog
+          open={!!exportingPaper}
+          onOpenChange={(open) => {
+            if (!open) {
+              setExportingPaper(null)
+            }
+          }}
+          paper={exportingPaper}
         />
       )}
     </div>
