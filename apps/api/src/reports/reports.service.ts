@@ -6,12 +6,17 @@ import {
 import { ReportRepository, FindReportsOptions, ReportWithPaper } from './report.repository';
 import { PaperRepository } from '../papers/paper.repository';
 import { AnswerRepository } from '../answers/answer.repository';
-import type { Report, PaginatedResponse } from '@quizflow/types';
+import type { Report, PaginatedResponse, Answer, Question } from '@quizflow/types';
 
 export interface CreateReportData {
   paper_id: string;
   summary: Record<string, unknown>;
   chart_data?: Record<string, unknown>;
+}
+
+interface AnswerWithResponses extends Answer {
+  responses: Record<string, string | string[]>;
+  time_spent?: number;
 }
 
 @Injectable()
@@ -120,22 +125,47 @@ export class ReportsService {
       throw new NotFoundException('试卷不存在');
     }
 
-    // 获取答卷统计
-    const stats = await this.answerRepository.getStatsByPaperId(paperId);
-    const answers = await this.answerRepository.findAllByPaperId(paperId);
+    // 获取答卷统计和详细数据
+    const answers = await this.answerRepository.findAllByPaperId(paperId) as AnswerWithResponses[];
+    const completedAnswers = answers.filter(a => a.status === 'completed' || a.status === 'graded');
 
-    // 生成报告数据
+    // 计算统计数据
+    const totalStudents = new Set(answers.map(a => a.student_email || a.student_name || a.id)).size;
+
+    const averageScore = completedAnswers.length > 0
+      ? completedAnswers.reduce((sum, a) => {
+          if (a.total_score && a.total_score > 0) {
+            return sum + (a.score / a.total_score) * 100;
+          }
+          return sum;
+        }, 0) / completedAnswers.length
+      : 0;
+
+    // 计算及格率 (>=60%)
+    const passCount = completedAnswers.filter(a => {
+      if (a.total_score && a.total_score > 0) {
+        return (a.score / a.total_score) * 100 >= 60;
+      }
+      return false;
+    }).length;
+    const passRate = completedAnswers.length > 0 ? (passCount / completedAnswers.length) * 100 : 0;
+
+    // 计算完成率
+    const completionRate = answers.length > 0 ? (completedAnswers.length / answers.length) * 100 : 0;
+
+    // 生成报告摘要
     const summary = {
-      paperTitle: paper.title,
-      totalAnswers: stats.totalAnswers,
-      completedCount: stats.completedCount,
-      averageScore: stats.averageScore,
-      averageTimeSpent: stats.averageTimeSpent,
-      generatedAt: new Date().toISOString(),
+      total_students: totalStudents,
+      average_score: Math.round(averageScore * 10) / 10,
+      pass_rate: Math.round(passRate * 10) / 10,
+      completion_rate: Math.round(completionRate * 10) / 10,
+      paper_title: paper.title,
+      total_questions: paper.questions?.length || 0,
+      generated_at: new Date().toISOString(),
     };
 
     // 生成图表数据
-    const chartData = this.generateChartData(answers);
+    const chartData = this.generateChartData(completedAnswers, paper.questions || []);
 
     // 检查是否已有报告，有则更新
     const existingReport = await this.reportRepository.findByPaperId(paperId);
@@ -157,30 +187,117 @@ export class ReportsService {
   /**
    * 生成图表数据
    */
-  private generateChartData(answers: { score?: number; total_score?: number; time_spent?: number }[]): Record<string, unknown> {
-    // 分数分布
-    const scoreDistribution: Record<string, number> = {
-      '0-60': 0,
-      '60-70': 0,
-      '70-80': 0,
-      '80-90': 0,
-      '90-100': 0,
-    };
+  private generateChartData(
+    answers: AnswerWithResponses[],
+    questions: Question[],
+  ): Record<string, unknown> {
+    // 1. 分数分布 (5个区间)
+    const scoreDistribution = [
+      { score: '0-20', count: 0 },
+      { score: '21-40', count: 0 },
+      { score: '41-60', count: 0 },
+      { score: '61-80', count: 0 },
+      { score: '81-100', count: 0 },
+    ];
 
     answers.forEach((answer) => {
       if (answer.score !== undefined && answer.total_score && answer.total_score > 0) {
         const percentage = (answer.score / answer.total_score) * 100;
-        if (percentage < 60) scoreDistribution['0-60']++;
-        else if (percentage < 70) scoreDistribution['60-70']++;
-        else if (percentage < 80) scoreDistribution['70-80']++;
-        else if (percentage < 90) scoreDistribution['80-90']++;
-        else scoreDistribution['90-100']++;
+        if (percentage <= 20) scoreDistribution[0].count++;
+        else if (percentage <= 40) scoreDistribution[1].count++;
+        else if (percentage <= 60) scoreDistribution[2].count++;
+        else if (percentage <= 80) scoreDistribution[3].count++;
+        else scoreDistribution[4].count++;
       }
     });
 
-    return {
-      scoreDistribution,
-      totalResponses: answers.length,
+    // 2. 题目正确率分析
+    const questionAnalysis = questions.map((question, index) => {
+      let correctCount = 0;
+      let totalAttempts = 0;
+
+      answers.forEach((answer) => {
+        const userAnswer = answer.responses?.[question.id];
+        if (userAnswer !== undefined && userAnswer !== null) {
+          totalAttempts++;
+          if (this.checkAnswerCorrect(question, userAnswer)) {
+            correctCount++;
+          }
+        }
+      });
+
+      return {
+        question_id: question.id,
+        question_index: index + 1,
+        correct_rate: totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0,
+        total_attempts: totalAttempts,
+        correct_count: correctCount,
+      };
+    });
+
+    // 3. 答题时间分布
+    const timeAnalysis = [
+      { time_range: '0-10min', count: 0 },
+      { time_range: '10-20min', count: 0 },
+      { time_range: '20-30min', count: 0 },
+      { time_range: '30-40min', count: 0 },
+      { time_range: '40-50min', count: 0 },
+      { time_range: '50-60min', count: 0 },
+      { time_range: '>60min', count: 0 },
+    ];
+
+    answers.forEach((answer) => {
+      if (answer.time_spent && answer.time_spent > 0) {
+        const minutes = answer.time_spent / 60;
+        if (minutes <= 10) timeAnalysis[0].count++;
+        else if (minutes <= 20) timeAnalysis[1].count++;
+        else if (minutes <= 30) timeAnalysis[2].count++;
+        else if (minutes <= 40) timeAnalysis[3].count++;
+        else if (minutes <= 50) timeAnalysis[4].count++;
+        else if (minutes <= 60) timeAnalysis[5].count++;
+        else timeAnalysis[6].count++;
+      }
+    });
+
+    // 4. 难度分布
+    const difficultyDistribution = {
+      easy: 0,
+      medium: 0,
+      hard: 0,
     };
+    questions.forEach((q) => {
+      const difficulty = q.difficulty || 'medium';
+      difficultyDistribution[difficulty]++;
+    });
+
+    return {
+      score_distribution: scoreDistribution,
+      question_analysis: questionAnalysis,
+      time_analysis: timeAnalysis,
+      difficulty_distribution: difficultyDistribution,
+      total_responses: answers.length,
+    };
+  }
+
+  /**
+   * 检查答案是否正确
+   */
+  private checkAnswerCorrect(question: Question, userAnswer: string | string[]): boolean {
+    const correctAnswer = question.answer;
+
+    if (question.type === 'single') {
+      return String(userAnswer).trim() === String(correctAnswer).trim();
+    } else if (question.type === 'multiple') {
+      const userArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+      const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer];
+      if (userArray.length !== correctArray.length) return false;
+      return userArray.every(ans => correctArray.includes(String(ans).trim()));
+    } else if (question.type === 'fill') {
+      const userText = Array.isArray(userAnswer) ? userAnswer[0] : userAnswer;
+      const correctText = Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer;
+      return String(userText).trim().toLowerCase() === String(correctText).trim().toLowerCase();
+    }
+
+    return false;
   }
 }

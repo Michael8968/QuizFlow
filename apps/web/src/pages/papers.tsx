@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Edit, Trash2, Eye, Copy, BarChart3, Loader2, QrCode } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Copy, BarChart3, Loader2, QrCode, Download } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { Paper, Question } from '@/types'
 import { PaperFormDialog } from '@/components/papers/paper-form-dialog'
 import { PaperPreviewDialog } from '@/components/papers/paper-preview-dialog'
 import { QRCodeDialog } from '@/components/papers/qr-code-dialog'
+import { PaperExportDialog } from '@/components/papers/paper-export-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/auth'
@@ -29,6 +30,7 @@ export function Papers() {
   const [previewingPaper, setPreviewingPaper] = useState<Paper | null>(null)
   const [deletingPaperId, setDeletingPaperId] = useState<string | null>(null)
   const [qrCodePaper, setQrCodePaper] = useState<Paper | null>(null)
+  const [exportingPaper, setExportingPaper] = useState<Paper | null>(null)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -297,6 +299,10 @@ export function Papers() {
     setPreviewingPaper(paper)
   }
 
+  const handleExport = (paper: Paper) => {
+    setExportingPaper(paper)
+  }
+
   const handleViewReport = (paperId: string) => {
     // 权限检查：确保只能查看自己试卷的报告
     const paper = papers.find(p => p.id === paperId)
@@ -363,15 +369,15 @@ export function Papers() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">试卷管理</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">试卷管理</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
             创建和管理您的试卷，设置考试参数
           </p>
         </div>
-        <Button onClick={handleAdd}>
+        <Button onClick={handleAdd} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           创建试卷
         </Button>
@@ -379,7 +385,7 @@ export function Papers() {
 
       {/* 搜索 */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 sm:pt-6 sm:px-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -414,29 +420,29 @@ export function Papers() {
       {/* 试卷列表 */}
       {!isLoading && !error && (
         <>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredPapers.map((paper) => (
-              <Card key={paper.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{paper.title}</CardTitle>
-                      <CardDescription className="mt-1">
+              <Card key={paper.id} className="hover:shadow-lg transition-shadow overflow-hidden">
+                <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base sm:text-lg truncate">{paper.title}</CardTitle>
+                      <CardDescription className="mt-1 text-xs sm:text-sm line-clamp-2">
                         {paper.description || '暂无描述'}
                       </CardDescription>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(paper.status)}`}>
+                    <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(paper.status)}`}>
                       {getStatusText(paper.status)}
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm text-gray-600">
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                    <div className="flex justify-between text-gray-600">
                       <span>题目数量</span>
                       <span>{paper.questions?.length || 0} 题</span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-gray-600">
                       <span>时间限制</span>
                       <span>
                         {paper.settings?.time_limit ? `${paper.settings.time_limit} 分钟` : '无限制'}
@@ -444,10 +450,10 @@ export function Papers() {
                     </div>
                     {paper.status === 'published' && paper.quiz_code && (
                       <>
-                        <div className="flex justify-between items-center text-sm">
+                        <div className="flex justify-between items-center">
                           <span className="text-gray-600">考试码</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold text-primary">{paper.quiz_code}</span>
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <span className="font-mono font-semibold text-primary text-sm">{paper.quiz_code}</span>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -465,17 +471,17 @@ export function Papers() {
                             </Button>
                           </div>
                         </div>
-                        <div className="pt-2">
+                        <div className="pt-1 sm:pt-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full"
+                            className="w-full h-8 text-xs sm:text-sm"
                             onClick={(e) => {
                               e.stopPropagation()
                               setQrCodePaper(paper)
                             }}
                           >
-                            <QrCode className="mr-2 h-4 w-4" />
+                            <QrCode className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             显示二维码
                           </Button>
                         </div>
@@ -483,75 +489,86 @@ export function Papers() {
                     )}
                     {paper.answerCount !== undefined && (
                       <>
-                        <div className="flex justify-between text-sm text-gray-600">
+                        <div className="flex justify-between text-gray-600">
                           <span>答卷数量</span>
                           <span>{paper.answerCount} 份</span>
                         </div>
                         {paper.answerCount > 0 && paper.averageScore !== undefined && (
-                          <div className="flex justify-between text-sm text-gray-600">
+                          <div className="flex justify-between text-gray-600">
                             <span>平均分</span>
                             <span>{paper.averageScore.toFixed(1)}%</span>
                           </div>
                         )}
                       </>
                     )}
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-gray-600">
                       <span>创建时间</span>
                       <span>{formatDate(paper.created_at)}</span>
                     </div>
                   </div>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
+
+                  <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs sm:text-sm"
                       onClick={() => handlePreview(paper)}
                     >
-                      <Eye className="mr-2 h-4 w-4" />
-                      预览
+                      <Eye className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">预览</span>
                     </Button>
                     {user && paper.user_id === user.id && (
                       <>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs sm:text-sm"
                           onClick={() => handleEdit(paper)}
                         >
-                          <Edit className="mr-2 h-4 w-4" />
-                          编辑
+                          <Edit className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          <span className="hidden xs:inline">编辑</span>
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleExport(paper)}
+                          title="导出试卷"
+                        >
+                          <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={() => handleCopy(paper)}
                           disabled={copyMutation.isPending}
                           title="复制试卷"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={() => handleDelete(paper.id)}
                           disabled={deleteMutation.isPending}
                           title="删除试卷"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                       </>
                     )}
                   </div>
 
                   {user && paper.user_id === user.id && paper.answerCount !== undefined && paper.answerCount > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full mt-2"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full mt-2 h-8 text-xs sm:text-sm"
                       onClick={() => handleViewReport(paper.id)}
                     >
-                      <BarChart3 className="mr-2 h-4 w-4" />
+                      <BarChart3 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       查看分析报告
                     </Button>
                   )}
@@ -622,6 +639,19 @@ export function Papers() {
           }}
           quizCode={qrCodePaper.quiz_code}
           paperTitle={qrCodePaper.title}
+        />
+      )}
+
+      {/* 导出对话框 */}
+      {exportingPaper && (
+        <PaperExportDialog
+          open={!!exportingPaper}
+          onOpenChange={(open) => {
+            if (!open) {
+              setExportingPaper(null)
+            }
+          }}
+          paper={exportingPaper}
         />
       )}
     </div>

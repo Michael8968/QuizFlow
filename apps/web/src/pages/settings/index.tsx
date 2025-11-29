@@ -6,13 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { User, CreditCard, Bell, Shield, HelpCircle, Loader2 } from 'lucide-react'
+import { User, CreditCard, Bell, Shield, HelpCircle, Loader2, MessageSquarePlus } from 'lucide-react'
 import { useAuth } from '@/components/auth/auth-provider'
 import { useAuthStore } from '@/stores/auth'
 import { supabase } from '@/lib/api'
 import { api } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { PricingDialog } from '@/components/pricing-dialog'
+import { FeedbackDialog } from '@/components/feedback-dialog'
 import { Question, Paper } from '@/types'
 
 interface ProfileFormData {
@@ -41,7 +43,9 @@ export function Settings() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [isUpgrading, setIsUpgrading] = useState(false)
+  const [showPricingDialog, setShowPricingDialog] = useState(false)
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
+  const [isManagingSubscription, setIsManagingSubscription] = useState(false)
   
   // 通知设置状态
   const [notifications, setNotifications] = useState<NotificationSettings>({
@@ -395,8 +399,13 @@ export function Settings() {
     window.open(links[type], '_blank')
   }
 
-  // 升级到专业版
-  const handleUpgrade = async () => {
+  // 打开定价对话框
+  const handleUpgrade = () => {
+    setShowPricingDialog(true)
+  }
+
+  // 管理订阅（打开 Stripe Customer Portal）
+  const handleManageSubscription = async () => {
     if (!user) {
       toast({
         title: '错误',
@@ -406,45 +415,23 @@ export function Settings() {
       return
     }
 
-    setIsUpgrading(true)
+    setIsManagingSubscription(true)
     try {
-      // 调用 API 创建订阅
-      await api.createSubscription('professional')
-
-      // 更新 users 表中的 plan 字段
-      const { error: dbError } = await supabase
-        .from('users')
-        .update({
-          plan: 'professional',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id)
-
-      if (dbError) {
-        throw dbError
+      const result = await api.createPortalSession()
+      if (result.url) {
+        window.location.href = result.url
+      } else {
+        throw new Error('未获取到管理链接')
       }
-
-      // 更新本地 store 中的用户信息
-      const updatedUser = {
-        ...user,
-        plan: 'professional' as const,
-        updated_at: new Date().toISOString(),
-      }
-      setUser(updatedUser)
-
-      toast({
-        title: '升级成功',
-        description: '您已成功升级到专业版，享受更多功能！',
-      })
     } catch (error: any) {
-      console.error('升级失败:', error)
+      console.error('打开订阅管理失败:', error)
       toast({
-        title: '升级失败',
-        description: error.message || '升级时出错，请稍后重试',
+        title: '操作失败',
+        description: error.message || '无法打开订阅管理页面，请稍后重试',
         variant: 'destructive',
       })
     } finally {
-      setIsUpgrading(false)
+      setIsManagingSubscription(false)
     }
   }
 
@@ -731,22 +718,40 @@ export function Settings() {
                   <span>{usageLimits.aiEnabled ? '可用' : '不可用'}</span>
                 </div>
               </div>
-              {user?.plan === 'free' && (
-                <Button 
-                  className="w-full" 
+              {user?.plan === 'free' ? (
+                <Button
+                  className="w-full"
                   variant="default"
                   onClick={handleUpgrade}
-                  disabled={isUpgrading}
                 >
-                  {isUpgrading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      升级中...
-                    </>
-                  ) : (
-                    '升级到专业版'
-                  )}
+                  升级计划
                 </Button>
+              ) : (
+                <div className="space-y-2">
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={handleManageSubscription}
+                    disabled={isManagingSubscription}
+                  >
+                    {isManagingSubscription ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        加载中...
+                      </>
+                    ) : (
+                      '管理订阅'
+                    )}
+                  </Button>
+                  <Button
+                    className="w-full"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUpgrade}
+                  >
+                    更换计划
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -780,6 +785,14 @@ export function Settings() {
                 onClick={() => handleHelpClick('support')}
               >
                 联系支持
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowFeedbackDialog(true)}
+              >
+                <MessageSquarePlus className="mr-2 h-4 w-4" />
+                提交反馈
               </Button>
             </CardContent>
           </Card>
@@ -823,6 +836,19 @@ export function Settings() {
         cancelText="取消"
         variant="destructive"
         onConfirm={handleDeleteAccount}
+      />
+
+      {/* 定价对话框 */}
+      <PricingDialog
+        open={showPricingDialog}
+        onOpenChange={setShowPricingDialog}
+        currentPlan={user?.plan}
+      />
+
+      {/* 反馈对话框 */}
+      <FeedbackDialog
+        open={showFeedbackDialog}
+        onOpenChange={setShowFeedbackDialog}
       />
     </div>
   )

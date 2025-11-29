@@ -1,15 +1,19 @@
 import { useAuth } from '@/components/auth/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  BookOpen, 
-  FileText, 
-  BarChart3, 
-  Users, 
+import { Badge } from '@/components/ui/badge'
+import {
+  BookOpen,
+  FileText,
+  BarChart3,
+  Users,
   Plus,
   TrendingUp,
   Clock,
-  Loader2
+  Loader2,
+  Sparkles,
+  ArrowRight,
+  Zap
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -210,68 +214,92 @@ export function Dashboard() {
     )
   }
 
+  const isProfessional = ['professional', 'institution', 'ai_enhanced'].includes(user?.plan || '')
+
   return (
-    <div className="space-y-6">
-      {/* 欢迎区域 */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          欢迎回来，{user?.name}！
-        </h1>
-        <p className="mt-2 text-gray-600">
-          管理您的题库、创建试卷并分析学生成绩
-        </p>
+    <div className="space-y-8">
+      {/* 欢迎区域 - 增强视觉效果 */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 md:p-8">
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+              欢迎回来，{user?.name}！
+            </h1>
+            {isProfessional && (
+              <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
+                <Zap className="w-3 h-3 mr-1" />
+                {user?.plan === 'professional' ? '专业版' :
+                 user?.plan === 'institution' ? '机构版' : 'AI增强版'}
+              </Badge>
+            )}
+          </div>
+          <p className="text-gray-600 max-w-2xl">
+            管理您的题库、创建试卷并分析学生成绩。今天也是高效工作的一天！
+          </p>
+        </div>
+        <div className="absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 opacity-10">
+          <BookOpen className="w-64 h-64 text-primary" />
+        </div>
       </div>
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      {/* 统计卡片 - 增强样式 */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总题目数</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">总题目数</CardTitle>
+            <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <BookOpen className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalQuestions}</div>
-            <p className="text-xs text-muted-foreground">
-              总题目数
+            <div className="text-3xl font-bold text-gray-900">{stats.totalQuestions}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              题库中的题目总数
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">试卷数量</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">试卷数量</CardTitle>
+            <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
+              <FileText className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPapers}</div>
-            <p className="text-xs text-muted-foreground">
-              总试卷数
+            <div className="text-3xl font-bold text-gray-900">{stats.totalPapers}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              已创建的试卷
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">答卷数量</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">答卷数量</CardTitle>
+            <div className="p-2 rounded-lg bg-orange-100 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+              <Users className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalAnswers}</div>
-            <p className="text-xs text-muted-foreground">
-              总答卷数
+            <div className="text-3xl font-bold text-gray-900">{stats.totalAnswers}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              收到的答卷总数
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">平均分</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">平均得分</CardTitle>
+            <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+              <TrendingUp className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageScore.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              平均得分率
+            <div className="text-3xl font-bold text-gray-900">{stats.averageScore.toFixed(1)}%</div>
+            <p className="text-xs text-gray-500 mt-1">
+              学生平均得分率
             </p>
           </CardContent>
         </Card>
@@ -279,43 +307,71 @@ export function Dashboard() {
 
       {/* 快捷操作 */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader>
-            <CardTitle>快捷操作</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-500" />
+              快捷操作
+            </CardTitle>
             <CardDescription>
               快速开始您的工作
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button 
-              className="w-full justify-start" 
+            <Button
+              className="w-full justify-between group"
               onClick={() => navigate('/questions')}
             >
-              <Plus className="mr-2 h-4 w-4" />
-              添加新题目
+              <span className="flex items-center">
+                <Plus className="mr-2 h-4 w-4" />
+                添加新题目
+              </span>
+              <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </Button>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
+            {isProfessional && (
+              <Button
+                variant="outline"
+                className="w-full justify-between group bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100"
+                onClick={() => navigate('/questions')}
+              >
+                <span className="flex items-center">
+                  <Sparkles className="mr-2 h-4 w-4 text-purple-600" />
+                  AI 智能出题
+                </span>
+                <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              className="w-full justify-between group"
               onClick={() => navigate('/papers')}
             >
-              <FileText className="mr-2 h-4 w-4" />
-              创建新试卷
+              <span className="flex items-center">
+                <FileText className="mr-2 h-4 w-4" />
+                创建新试卷
+              </span>
+              <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </Button>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
+            <Button
+              variant="outline"
+              className="w-full justify-between group"
               onClick={() => navigate('/reports')}
             >
-              <BarChart3 className="mr-2 h-4 w-4" />
-              查看成绩分析
+              <span className="flex items-center">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                查看成绩分析
+              </span>
+              <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </Button>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader>
-            <CardTitle>最近活动</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-500" />
+              最近活动
+            </CardTitle>
             <CardDescription>
               您的最新操作记录
             </CardDescription>
@@ -323,37 +379,53 @@ export function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {recentActivities.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">暂无活动记录</p>
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                    <Clock className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500">暂无活动记录</p>
+                  <p className="text-xs text-gray-400 mt-1">开始创建题目或试卷吧</p>
+                </div>
               ) : (
                 recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    {activity.type === 'paper' && <FileText className="h-4 w-4 text-blue-500" />}
-                    {activity.type === 'question' && <BookOpen className="h-4 w-4 text-green-500" />}
-                    {activity.type === 'answer' && <Users className="h-4 w-4 text-orange-500" />}
-                    {activity.type === 'report' && <BarChart3 className="h-4 w-4 text-purple-500" />}
+                  <div
+                    key={activity.id}
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex-shrink-0">
+                      <div className={`p-2 rounded-lg ${
+                        activity.type === 'paper' ? 'bg-blue-100' :
+                        activity.type === 'question' ? 'bg-green-100' :
+                        activity.type === 'answer' ? 'bg-orange-100' :
+                        'bg-purple-100'
+                      }`}>
+                        {activity.type === 'paper' && <FileText className="h-4 w-4 text-blue-600" />}
+                        {activity.type === 'question' && <BookOpen className="h-4 w-4 text-green-600" />}
+                        {activity.type === 'answer' && <Users className="h-4 w-4 text-orange-600" />}
+                        {activity.type === 'report' && <BarChart3 className="h-4 w-4 text-purple-600" />}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {activity.title}
+                      </p>
+                      <p className="text-xs text-gray-500 flex items-center mt-0.5">
+                        <Clock className="mr-1 h-3 w-3" />
+                        {activity.time}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        activity.status === 'published' ? 'bg-green-100 text-green-700' :
+                        activity.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {activity.status === 'published' ? '已发布' :
+                         activity.status === 'completed' ? '已完成' : '新'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {activity.title}
-                    </p>
-                    <p className="text-sm text-gray-500 flex items-center">
-                      <Clock className="mr-1 h-3 w-3" />
-                      {activity.time}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      activity.status === 'published' ? 'bg-green-100 text-green-800' :
-                      activity.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {activity.status === 'published' ? '已发布' :
-                       activity.status === 'completed' ? '已完成' : '新'}
-                    </span>
-                  </div>
-                </div>
-              ))
+                ))
               )}
             </div>
           </CardContent>

@@ -1,16 +1,17 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Sparkles } from 'lucide-react'
-import { getQuestionTypeLabel, getDifficultyColor } from '@/lib/utils'
+import { Plus, Search, Filter, Loader2, Sparkles, FileUp } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Question } from '@/types'
 import { QuestionFormDialog } from '@/components/question-form-dialog'
 import { QuestionDetailDialog } from '@/components/question-detail-dialog'
+import { QuestionCard } from '@/components/question-card'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AiGenerateDialog } from '@/components/ai-generate-dialog'
+import { ImportExportDialog } from '@/components/import-export-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/components/auth/auth-provider'
 
@@ -21,6 +22,7 @@ export function Questions() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
+  const [isImportExportDialogOpen, setIsImportExportDialogOpen] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null)
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null)
@@ -155,6 +157,15 @@ export function Questions() {
     await batchCreateMutation.mutateAsync(questions)
   }
 
+  // 处理导入的题目
+  const handleImportQuestions = async (importedQuestions: Partial<Question>[]) => {
+    if (importedQuestions.length === 0) {
+      return
+    }
+    await batchCreateMutation.mutateAsync(importedQuestions as Question[])
+    setIsImportExportDialogOpen(false)
+  }
+
   const questions = data || []
 
   // 客户端筛选
@@ -168,67 +179,78 @@ export function Questions() {
     })
   }, [questions, searchTerm, selectedDifficulty])
 
-  const handleAdd = () => {
+  // 使用 useCallback 优化事件处理器
+  const handleAdd = useCallback(() => {
     setEditingQuestion(null)
     setIsFormDialogOpen(true)
-  }
+  }, [])
 
-  const handleEdit = (question: Question) => {
+  const handleEdit = useCallback((question: Question) => {
     setEditingQuestion(question)
     setIsFormDialogOpen(true)
-  }
+  }, [])
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     setDeletingQuestionId(id)
     setIsConfirmDialogOpen(true)
-  }
+  }, [])
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
     if (deletingQuestionId) {
       deleteMutation.mutate(deletingQuestionId)
       setDeletingQuestionId(null)
     }
-  }
+  }, [deletingQuestionId, deleteMutation])
 
-  const handleView = (question: Question) => {
+  const handleView = useCallback((question: Question) => {
     setViewingQuestion(question)
     setIsDetailDialogOpen(true)
-  }
+  }, [])
 
-  const handleSubmit = async (questionData: any) => {
+  const handleSubmit = useCallback(async (questionData: any) => {
     try {
       if (editingQuestion) {
         await updateMutation.mutateAsync({ id: editingQuestion.id, data: questionData })
       } else {
         await createMutation.mutateAsync(questionData)
       }
-    } catch (error) {
-      // 错误已经在 mutation 的 onError 中处理，这里不需要额外处理
-      console.error('提交题目失败:', error)
+    } catch {
+      // 错误已经在 mutation 的 onError 中处理
     }
-  }
+  }, [editingQuestion, updateMutation, createMutation])
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">题库管理</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">题库管理</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
             管理您的题目库，创建、编辑和组织题目
           </p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
+            onClick={() => setIsImportExportDialogOpen(true)}
+            className="flex-1 sm:flex-none"
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            <span className="hidden xs:inline">导入导出</span>
+            <span className="xs:hidden">导入</span>
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setIsAiDialogOpen(true)}
-            className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100"
+            className="flex-1 sm:flex-none bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:from-purple-100 hover:to-blue-100"
           >
             <Sparkles className="mr-2 h-4 w-4" />
-            AI 出题
+            <span className="hidden xs:inline">AI 出题</span>
+            <span className="xs:hidden">AI</span>
           </Button>
-          <Button onClick={handleAdd}>
+          <Button onClick={handleAdd} className="flex-1 sm:flex-none">
             <Plus className="mr-2 h-4 w-4" />
-            添加题目
+            <span className="hidden xs:inline">添加题目</span>
+            <span className="xs:hidden">添加</span>
           </Button>
         </div>
       </div>
@@ -290,81 +312,16 @@ export function Questions() {
       {/* 题目列表 */}
       {!isLoading && !error && (
         <>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredQuestions.map((question: Question) => (
-              <Card key={question.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-medium text-gray-500">
-                          {getQuestionTypeLabel(question.type)}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
-                          {question.difficulty === 'easy' ? '简单' : 
-                           question.difficulty === 'medium' ? '中等' : '困难'}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {question.points} 分
-                        </span>
-                      </div>
-                      <p className="text-gray-900 mb-3">{question.content}</p>
-                      {question.options && question.options.length > 0 && (
-                        <div className="space-y-1 mb-3">
-                          {question.options.slice(0, 2).map((option: string, index: number) => (
-                            <div key={index} className="text-sm text-gray-600">
-                              {String.fromCharCode(65 + index)}. {option}
-                            </div>
-                          ))}
-                          {question.options.length > 2 && (
-                            <div className="text-sm text-gray-500">
-                              还有 {question.options.length - 2} 个选项...
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex flex-wrap gap-1">
-                        {question.tags?.map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleView(question)}
-                        title="查看详情"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEdit(question)}
-                        title="编辑"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(question.id)}
-                        title="删除"
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <QuestionCard
+                key={question.id}
+                question={question}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                isDeleting={deleteMutation.isPending}
+              />
             ))}
           </div>
 
@@ -419,6 +376,14 @@ export function Questions() {
         onOpenChange={setIsAiDialogOpen}
         onQuestionsGenerated={handleAiQuestionsGenerated}
         userPlan={user?.plan}
+      />
+
+      {/* 导入导出对话框 */}
+      <ImportExportDialog
+        open={isImportExportDialogOpen}
+        onOpenChange={setIsImportExportDialogOpen}
+        questions={questions}
+        onImport={handleImportQuestions}
       />
     </div>
   )

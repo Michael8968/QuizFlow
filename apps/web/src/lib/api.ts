@@ -191,8 +191,16 @@ class ApiClient {
     return this.request('/reports')
   }
 
+  async getReport(id: string) {
+    return this.request(`/reports/${id}`)
+  }
+
+  async getReportByPaper(paperId: string) {
+    return this.request(`/reports/paper/${paperId}`)
+  }
+
   async generateReport(paperId: string) {
-    return this.request(`/reports/generate/${paperId}`, {
+    return this.request(`/reports/paper/${paperId}/generate`, {
       method: 'POST',
     })
   }
@@ -202,11 +210,60 @@ class ApiClient {
     return this.request('/subscriptions')
   }
 
-  async createSubscription(plan: string) {
-    return this.request('/subscriptions', {
+  async getPlans() {
+    return this.request('/subscriptions/plans')
+  }
+
+  async createCheckoutSession(plan: string, billingPeriod: 'monthly' | 'yearly' = 'monthly') {
+    return this.request<{ sessionId: string; url: string }>('/subscriptions/checkout', {
       method: 'POST',
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, billingPeriod }),
     })
+  }
+
+  async createPortalSession() {
+    return this.request<{ url: string }>('/subscriptions/portal', {
+      method: 'POST',
+    })
+  }
+
+  async cancelSubscription() {
+    return this.request('/subscriptions/cancel', {
+      method: 'POST',
+    })
+  }
+
+  async resumeSubscription() {
+    return this.request('/subscriptions/resume', {
+      method: 'POST',
+    })
+  }
+
+  // 反馈相关
+  async submitFeedback(feedback: {
+    type: string
+    title: string
+    content: string
+    rating?: number
+    user_email?: string
+    user_name?: string
+  }) {
+    return this.request('/feedback', {
+      method: 'POST',
+      body: JSON.stringify(feedback),
+    })
+  }
+
+  async getFeedbacks(params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params?.page) searchParams.set('page', params.page.toString())
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    return this.request(`/feedback?${searchParams}`)
+  }
+
+  // 旧版兼容
+  async createSubscription(plan: string) {
+    return this.createCheckoutSession(plan, 'monthly')
   }
 }
 
