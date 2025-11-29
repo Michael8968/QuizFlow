@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts'
-import { Download, Eye, RefreshCw, Loader2 } from 'lucide-react'
+import { Download, Eye, RefreshCw, Loader2, FileBarChart } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Paper, Answer, Report, Question } from '@/types'
 import { formatDate } from '@/lib/utils'
@@ -262,6 +262,40 @@ export function Reports() {
     ].filter(item => item.value > 0)
   }, [selectedPaper, questionsData])
 
+  // 生成报告 mutation
+  const generateReportMutation = useMutation({
+    mutationFn: async (paperId: string) => {
+      return api.generateReport(paperId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reports'] })
+      toast({
+        title: '生成成功',
+        description: '报告已生成并保存',
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: '生成失败',
+        description: error.message || '生成报告失败，请重试',
+        variant: 'destructive',
+      })
+    },
+  })
+
+  // 生成报告
+  const handleGenerateReport = () => {
+    if (selectedPaperId === 'all') {
+      toast({
+        title: '请选择试卷',
+        description: '请先选择一份具体的试卷来生成报告',
+        variant: 'destructive',
+      })
+      return
+    }
+    generateReportMutation.mutate(selectedPaperId)
+  }
+
   // 刷新数据
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['papers', 'reports'] })
@@ -436,6 +470,20 @@ export function Reports() {
           <Button variant="outline" onClick={handleRefresh} className="flex-1 sm:flex-none">
             <RefreshCw className="mr-2 h-4 w-4" />
             <span className="hidden xs:inline">刷新</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleGenerateReport}
+            className="flex-1 sm:flex-none"
+            disabled={selectedPaperId === 'all' || generateReportMutation.isPending}
+          >
+            {generateReportMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileBarChart className="mr-2 h-4 w-4" />
+            )}
+            <span className="hidden xs:inline">生成报告</span>
+            <span className="xs:hidden">生成</span>
           </Button>
           <Button onClick={handleExport} className="flex-1 sm:flex-none">
             <Download className="mr-2 h-4 w-4" />

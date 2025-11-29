@@ -191,8 +191,16 @@ class ApiClient {
     return this.request('/reports')
   }
 
+  async getReport(id: string) {
+    return this.request(`/reports/${id}`)
+  }
+
+  async getReportByPaper(paperId: string) {
+    return this.request(`/reports/paper/${paperId}`)
+  }
+
   async generateReport(paperId: string) {
-    return this.request(`/reports/generate/${paperId}`, {
+    return this.request(`/reports/paper/${paperId}/generate`, {
       method: 'POST',
     })
   }
