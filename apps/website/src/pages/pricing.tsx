@@ -3,70 +3,57 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, X } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from '@quizflow/i18n'
 
 export function Pricing() {
+  const { t } = useTranslation('website')
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
 
   const plans = [
     {
-      name: '免费版',
-      description: '适合个人用户和小规模使用',
+      name: t('pricing.free.name'),
+      description: t('pricing.free.desc'),
       monthlyPrice: 0,
       yearlyPrice: 0,
-      features: [
-        { name: '最多50道题目', included: true },
-        { name: '最多10份试卷', included: true },
-        { name: '基础报告分析', included: true },
-        { name: 'H5在线答卷', included: true },
-        { name: '社区支持', included: true },
-        { name: 'AI智能出题', included: false },
-        { name: '高级报告分析', included: false },
-        { name: 'API访问', included: false },
-        { name: '优先支持', included: false },
-        { name: '团队协作', included: false },
-      ],
-      cta: '立即开始',
+      features: (t('pricing.free.features', { returnObjects: true }) as string[]).map((name) => ({
+        name,
+        included: true,
+      })).concat([
+        { name: t('features.ai.title'), included: false },
+        { name: 'Advanced analytics', included: false },
+        { name: 'API access', included: false },
+        { name: 'Priority support', included: false },
+        { name: 'Team collaboration', included: false },
+      ]),
+      cta: t('pricing.free.cta'),
       highlight: false,
     },
     {
-      name: '专业版',
-      description: '适合专业教师和中小型机构',
-      monthlyPrice: 99,
-      yearlyPrice: 990,
-      features: [
-        { name: '无限题目', included: true },
-        { name: '无限试卷', included: true },
-        { name: '基础报告分析', included: true },
-        { name: 'H5在线答卷', included: true },
-        { name: 'AI智能出题', included: true },
-        { name: '高级报告分析', included: true },
-        { name: '优先支持', included: true },
-        { name: 'API访问', included: false },
-        { name: '团队协作', included: false },
-        { name: '自定义品牌', included: false },
-      ],
-      cta: '升级专业版',
+      name: t('pricing.pro.name'),
+      description: t('pricing.pro.desc'),
+      monthlyPrice: 15,
+      yearlyPrice: 144,
+      features: (t('pricing.pro.features', { returnObjects: true }) as string[]).map((name) => ({
+        name,
+        included: true,
+      })).concat([
+        { name: 'API access', included: false },
+        { name: 'Team collaboration', included: false },
+        { name: 'Custom branding', included: false },
+      ]),
+      cta: t('pricing.pro.cta'),
       highlight: true,
     },
     {
-      name: '机构版',
-      description: '适合大型教育机构和企业',
-      monthlyPrice: 499,
-      yearlyPrice: 4990,
-      features: [
-        { name: '无限题目', included: true },
-        { name: '无限试卷', included: true },
-        { name: '基础报告分析', included: true },
-        { name: 'H5在线答卷', included: true },
-        { name: 'AI智能出题', included: true },
-        { name: '高级报告分析', included: true },
-        { name: '优先支持', included: true },
-        { name: 'API访问', included: true },
-        { name: '团队协作', included: true },
-        { name: '自定义品牌', included: true },
-        { name: '专属客服', included: true },
-      ],
-      cta: '联系销售',
+      name: t('pricing.enterprise.name'),
+      description: t('pricing.enterprise.desc'),
+      monthlyPrice: null,
+      yearlyPrice: null,
+      features: (t('pricing.enterprise.features', { returnObjects: true }) as string[]).map((name) => ({
+        name,
+        included: true,
+      })),
+      cta: t('pricing.enterprise.cta'),
       highlight: false,
     },
   ]
@@ -77,10 +64,10 @@ export function Pricing() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            选择适合您的套餐
+            {t('pricing.title')}
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            灵活的定价方案，满足不同规模的需求
+            {t('pricing.subtitle')}
           </p>
 
           {/* Billing Toggle */}
@@ -90,7 +77,7 @@ export function Pricing() {
                 billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'
               }`}
             >
-              月付
+              {t('pricing.monthly')}
             </span>
             <button
               onClick={() =>
@@ -111,11 +98,11 @@ export function Pricing() {
                 billingPeriod === 'yearly' ? 'text-gray-900' : 'text-gray-500'
               }`}
             >
-              年付
+              {t('pricing.yearly')}
             </span>
             {billingPeriod === 'yearly' && (
               <span className="text-sm text-green-600 font-semibold">
-                节省17%
+                {t('pricing.yearlyDiscount')}
               </span>
             )}
           </div>
@@ -135,7 +122,7 @@ export function Pricing() {
               {plan.highlight && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    推荐
+                    {t('pricing.pro.popular')}
                   </span>
                 </div>
               )}
@@ -144,14 +131,20 @@ export function Pricing() {
                 <CardDescription>{plan.description}</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">
-                    ¥
-                    {billingPeriod === 'monthly'
-                      ? plan.monthlyPrice
-                      : plan.yearlyPrice}
+                    {plan.monthlyPrice === null ? plan.name : (
+                      <>
+                        $
+                        {billingPeriod === 'monthly'
+                          ? plan.monthlyPrice
+                          : plan.yearlyPrice}
+                      </>
+                    )}
                   </span>
-                  <span className="text-gray-600 ml-2">
-                    /{billingPeriod === 'monthly' ? '月' : '年'}
-                  </span>
+                  {plan.monthlyPrice !== null && (
+                    <span className="text-gray-600 ml-2">
+                      {billingPeriod === 'monthly' ? t('pricing.free.period') : '/year'}
+                    </span>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -188,35 +181,35 @@ export function Pricing() {
 
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">常见问题</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">{t('faq.title')}</h2>
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">可以随时取消订阅吗？</CardTitle>
+                <CardTitle className="text-lg">{t('faq.q4.q')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  是的，您可以随时取消订阅。取消后，您仍然可以使用服务直到当前计费周期结束。
+                  {t('faq.q4.a')}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">年付有优惠吗？</CardTitle>
+                <CardTitle className="text-lg">{t('faq.q6.q')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  是的，选择年付可以节省17%的费用，相当于免费使用2个月。
+                  {t('faq.q6.a')}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">支持退款吗？</CardTitle>
+                <CardTitle className="text-lg">{t('faq.q5.q')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  我们提供30天退款保证。如果您在30天内对服务不满意，可以申请全额退款。
+                  {t('faq.q5.a')}
                 </p>
               </CardContent>
             </Card>

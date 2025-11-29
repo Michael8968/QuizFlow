@@ -1,0 +1,91 @@
+{
+  "app": {
+    "name": "QuizFlow",
+    "title": "QuizFlow - AI-Powered Quiz Platform"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "questions": "Questions",
+    "papers": "Papers",
+    "reports": "Reports",
+    "settings": "Settings",
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "faq": "FAQ"
+  },
+  "action": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "add": "Add",
+    "remove": "Remove",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "refresh": "Refresh",
+    "export": "Export",
+    "import": "Import",
+    "download": "Download",
+    "upload": "Upload",
+    "copy": "Copy",
+    "share": "Share",
+    "preview": "Preview",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "loading": "Loading...",
+    "more": "More"
+  },
+  "status": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
+  },
+  "message": {
+    "saveSuccess": "Saved successfully",
+    "saveFailed": "Failed to save",
+    "deleteSuccess": "Deleted successfully",
+    "deleteFailed": "Failed to delete",
+    "copySuccess": "Copied to clipboard",
+    "operationSuccess": "Operation successful",
+    "operationFailed": "Operation failed",
+    "confirmDelete": "Are you sure you want to delete? This action cannot be undone.",
+    "noData": "No data available",
+    "loadingError": "Failed to load, please try again"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hours ago",
+    "daysAgo": "{{count}} days ago"
+  },
+  "pagination": {
+    "total": "{{total}} items total",
+    "page": "Page {{current}} of {{total}}",
+    "itemsPerPage": "{{count}} items per page"
+  },
+  "language": {
+    "zh": "中文",
+    "en": "English",
+    "switchLanguage": "Switch Language"
+  }
+}

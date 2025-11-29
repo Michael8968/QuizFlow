@@ -1,0 +1,81 @@
+{
+  "title": "试卷",
+  "list": {
+    "title": "试卷列表",
+    "empty": "暂无试卷",
+    "create": "创建试卷",
+    "search": "搜索试卷...",
+    "total": "共 {{count}} 份试卷"
+  },
+  "status": {
+    "label": "状态",
+    "draft": "草稿",
+    "published": "已发布",
+    "closed": "已关闭",
+    "archived": "已归档"
+  },
+  "form": {
+    "title": "试卷标题",
+    "titlePlaceholder": "请输入试卷标题",
+    "description": "试卷描述",
+    "descriptionPlaceholder": "请输入试卷描述",
+    "duration": "考试时长（分钟）",
+    "durationPlaceholder": "请输入考试时长",
+    "totalScore": "总分",
+    "passScore": "及格分",
+    "startTime": "开始时间",
+    "endTime": "结束时间",
+    "questions": "题目",
+    "questionsCount": "共 {{count}} 道题",
+    "addQuestions": "添加题目",
+    "selectQuestions": "选择题目",
+    "randomOrder": "题目乱序",
+    "showAnswer": "显示答案",
+    "allowRetake": "允许重考",
+    "maxAttempts": "最大尝试次数"
+  },
+  "action": {
+    "create": "创建试卷",
+    "edit": "编辑试卷",
+    "delete": "删除试卷",
+    "preview": "预览试卷",
+    "publish": "发布试卷",
+    "unpublish": "取消发布",
+    "duplicate": "复制试卷",
+    "share": "分享试卷",
+    "viewReport": "查看报告",
+    "generateQR": "生成二维码"
+  },
+  "share": {
+    "title": "分享试卷",
+    "link": "试卷链接",
+    "copyLink": "复制链接",
+    "qrCode": "二维码",
+    "downloadQR": "下载二维码",
+    "password": "访问密码",
+    "setPassword": "设置密码",
+    "noPassword": "无密码",
+    "expiresAt": "有效期至"
+  },
+  "message": {
+    "createSuccess": "试卷创建成功",
+    "createFailed": "试卷创建失败",
+    "updateSuccess": "试卷更新成功",
+    "updateFailed": "试卷更新失败",
+    "deleteSuccess": "试卷删除成功",
+    "deleteFailed": "试卷删除失败",
+    "publishSuccess": "试卷发布成功",
+    "publishFailed": "试卷发布失败",
+    "confirmDelete": "确定要删除这份试卷吗？",
+    "copyLinkSuccess": "链接已复制到剪贴板"
+  },
+  "validation": {
+    "titleRequired": "请输入试卷标题",
+    "durationRequired": "请输入考试时长",
+    "durationPositive": "考试时长必须大于 0",
+    "questionsRequired": "请至少添加一道题目",
+    "startTimeRequired": "请选择开始时间",
+    "endTimeRequired": "请选择结束时间",
+    "endTimeAfterStart": "结束时间必须晚于开始时间"
+  }
+}

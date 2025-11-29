@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from '@quizflow/i18n'
 import { useQuizStore } from '@/stores/quiz'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { CheckCircle, XCircle, RotateCcw, Home, X, CheckCircle2 } from 'lucide-r
 import type { QuizQuestionWithAnswer } from '@quizflow/types'
 
 export function QuizResult() {
+  const { t } = useTranslation(['quiz', 'common'])
   const { answerId: _answerId } = useParams()
   const navigate = useNavigate()
   const { quiz, answers, reset } = useQuizStore()
@@ -16,8 +18,8 @@ export function QuizResult() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">未找到考试信息</p>
-          <Button onClick={() => navigate('/')}>返回首页</Button>
+          <p className="text-gray-600 mb-4">{t('common:message.noData')}</p>
+          <Button onClick={() => navigate('/')}>{t('quiz:result.backToHome')}</Button>
         </div>
       </div>
     )
@@ -116,17 +118,17 @@ export function QuizResult() {
             )}
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {percentage >= 60 ? '恭喜！考试完成' : '考试完成'}
+            {percentage >= 60 ? t('quiz:result.passed') : t('quiz:result.title')}
           </h1>
           <p className="text-gray-600">
             {quiz.title}
           </p>
         </div>
 
-        {/* 分数卡片 */}
+        {/* Score card */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-center">考试成绩</CardTitle>
+            <CardTitle className="text-center">{t('quiz:result.score')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center">
@@ -137,7 +139,7 @@ export function QuizResult() {
                 {percentage}%
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-                <div 
+                <div
                   className={`h-3 rounded-full transition-all duration-500 ${
                     percentage >= 80 ? 'bg-green-500' :
                     percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
@@ -146,18 +148,18 @@ export function QuizResult() {
                 />
               </div>
               <p className="text-sm text-gray-600">
-                {percentage >= 80 && '优秀！'}
-                {percentage >= 60 && percentage < 80 && '良好！'}
-                {percentage < 60 && '需要继续努力！'}
+                {percentage >= 80 && t('quiz:result.passed')}
+                {percentage >= 60 && percentage < 80 && t('quiz:result.passed')}
+                {percentage < 60 && t('quiz:result.failed')}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* 答题统计 */}
+        {/* Answer statistics */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>答题统计</CardTitle>
+            <CardTitle>{t('quiz:result.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
@@ -165,55 +167,55 @@ export function QuizResult() {
                 <div className="text-2xl font-bold text-blue-600">
                   {quiz.questions.length}
                 </div>
-                <div className="text-sm text-gray-600">总题数</div>
+                <div className="text-sm text-gray-600">{t('quiz:info.totalQuestions')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {answeredCount}
                 </div>
-                <div className="text-sm text-gray-600">已答题</div>
+                <div className="text-sm text-gray-600">{t('quiz:taking.answered')}</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 操作按钮 */}
+        {/* Action buttons */}
         <div className="space-y-3">
-          <Button 
+          <Button
             onClick={handleReview}
             className="w-full"
             variant="outline"
           >
-            查看详细答案
+            {t('quiz:result.viewDetail')}
           </Button>
-          
+
           <div className="grid grid-cols-2 gap-3">
-            <Button 
+            <Button
               onClick={handleRestart}
               variant="outline"
               className="flex items-center justify-center"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              重新考试
+              {t('quiz:result.retake')}
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={() => navigate('/')}
               className="flex items-center justify-center"
             >
               <Home className="w-4 h-4 mr-2" />
-              返回首页
+              {t('quiz:result.backToHome')}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* 详细答案查看模态框 */}
+      {/* Detailed answer review modal */}
       {showReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-bold">详细答案</h2>
+              <h2 className="text-xl font-bold">{t('quiz:review.title')}</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -241,10 +243,8 @@ export function QuizResult() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="text-base mb-2">
-                            第 {index + 1} 题 {question.type === 'single' && '(单选题)'}
-                            {question.type === 'multiple' && '(多选题)'}
-                            {question.type === 'fill' && '(填空题)'}
-                            <span className="text-sm text-gray-500 ml-2">({question.points} 分)</span>
+                            {t('quiz:taking.question', { current: index + 1, total: quiz.questions.length })}
+                            <span className="text-sm text-gray-500 ml-2">({question.points} {t('quiz:review.score')})</span>
                           </CardTitle>
                           <p className="text-gray-700 mb-3">{question.content}</p>
                         </div>
@@ -287,10 +287,10 @@ export function QuizResult() {
                                     {option}
                                   </span>
                                   {isCorrectOption && (
-                                    <span className="ml-2 text-xs text-green-600">(正确答案)</span>
+                                    <span className="ml-2 text-xs text-green-600">({t('quiz:review.correctAnswer')})</span>
                                   )}
                                   {isUserSelected && !isCorrectOption && (
-                                    <span className="ml-2 text-xs text-red-600">(您的答案)</span>
+                                    <span className="ml-2 text-xs text-red-600">({t('quiz:review.yourAnswer')})</span>
                                   )}
                                 </div>
                               </div>
@@ -298,49 +298,49 @@ export function QuizResult() {
                           })}
                         </div>
                       )}
-                      
-                      {/* 填空题答案显示 */}
+
+                      {/* Fill-in answer display */}
                       {question.type === 'fill' && (
                         <div className="space-y-2">
                           <div className="p-3 bg-gray-50 rounded border">
-                            <div className="text-sm text-gray-600 mb-1">您的答案：</div>
+                            <div className="text-sm text-gray-600 mb-1">{t('quiz:review.yourAnswer')}:</div>
                             <div className={isCorrect ? 'text-green-700 font-semibold' : 'text-red-700'}>
-                              {userAnswerArray[0] || '(未作答)'}
+                              {userAnswerArray[0] || `(${t('quiz:taking.unanswered')})`}
                             </div>
                           </div>
                           <div className="p-3 bg-green-50 rounded border border-green-200">
-                            <div className="text-sm text-gray-600 mb-1">正确答案：</div>
+                            <div className="text-sm text-gray-600 mb-1">{t('quiz:review.correctAnswer')}:</div>
                             <div className="text-green-700 font-semibold">
-                              {correctAnswer[0] || '(无标准答案)'}
+                              {correctAnswer[0] || `(${t('common:message.noData')})`}
                             </div>
                           </div>
                         </div>
                       )}
-                      
-                      {/* 解析 */}
+
+                      {/* Analysis */}
                       {question.explanation && (
                         <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                          <div className="text-sm font-semibold text-blue-900 mb-1">解析：</div>
+                          <div className="text-sm font-semibold text-blue-900 mb-1">{t('quiz:review.analysis')}:</div>
                           <div className="text-sm text-blue-800">{question.explanation}</div>
                         </div>
                       )}
-                      
-                      {/* 得分情况 */}
+
+                      {/* Score */}
                       <div className="text-sm text-gray-600">
-                        得分：{isCorrect ? question.points : 0} / {question.points} 分
+                        {t('quiz:review.score')}: {isCorrect ? question.points : 0} / {question.points}
                       </div>
                     </CardContent>
                   </Card>
                 )
               })}
             </div>
-            
+
             <div className="p-4 border-t">
               <Button
                 onClick={() => setShowReview(false)}
                 className="w-full"
               >
-                关闭
+                {t('common:action.close')}
               </Button>
             </div>
           </div>

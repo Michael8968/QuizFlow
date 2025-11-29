@@ -1,0 +1,59 @@
+{
+  "title": "Reports",
+  "list": {
+    "title": "Report List",
+    "empty": "No reports yet",
+    "search": "Search reports...",
+    "total": "{{count}} reports total"
+  },
+  "overview": {
+    "title": "Overview",
+    "totalResponses": "Total Responses",
+    "averageScore": "Average Score",
+    "passRate": "Pass Rate",
+    "highestScore": "Highest Score",
+    "lowestScore": "Lowest Score",
+    "completionRate": "Completion Rate"
+  },
+  "detail": {
+    "title": "Report Details",
+    "paperInfo": "Paper Information",
+    "statistics": "Statistics",
+    "questionAnalysis": "Question Analysis",
+    "respondentList": "Respondent List"
+  },
+  "chart": {
+    "scoreDistribution": "Score Distribution",
+    "questionAccuracy": "Question Accuracy",
+    "timeTrend": "Time Trend",
+    "difficultyAnalysis": "Difficulty Analysis"
+  },
+  "respondent": {
+    "name": "Name",
+    "email": "Email",
+    "score": "Score",
+    "submitTime": "Submit Time",
+    "timeTaken": "Time Taken",
+    "status": "Status",
+    "viewDetail": "View Details"
+  },
+  "export": {
+    "title": "Export Report",
+    "format": "Export Format",
+    "excel": "Excel Spreadsheet",
+    "pdf": "PDF Document",
+    "csv": "CSV File",
+    "exportSuccess": "Report exported successfully",
+    "exportFailed": "Failed to export report",
+    "includeDetail": "Include detailed data",
+    "includeChart": "Include charts"
+  },
+  "filter": {
+    "dateRange": "Date Range",
+    "scoreRange": "Score Range",
+    "status": "Status",
+    "all": "All",
+    "passed": "Passed",
+    "failed": "Failed"
+  }
+}

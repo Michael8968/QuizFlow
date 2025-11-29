@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from '@quizflow/i18n'
 import {
   Dialog,
   DialogContent,
@@ -19,24 +20,11 @@ import { useToast } from '@/hooks/use-toast'
 import { api } from '@/lib/api'
 import { getQuestionTypeLabel, getDifficultyColor } from '@/lib/utils'
 
-const paperSchema = z.object({
-  title: z.string().min(1, '试卷标题不能为空'),
-  description: z.string().optional(),
-  status: z.enum(['draft', 'published', 'archived']),
-  time_limit: z.number().min(0).optional(),
-  shuffle_questions: z.boolean(),
-  shuffle_options: z.boolean(),
-  show_correct_answer: z.boolean(),
-  allow_review: z.boolean(),
-})
-
-type PaperFormData = z.infer<typeof paperSchema>
-
 interface PaperFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   paper?: Paper | null
-  onSubmit: (data: PaperFormData & { question_ids: string[] }) => Promise<void>
+  onSubmit: (data: any & { question_ids: string[] }) => Promise<void>
 }
 
 export function PaperFormDialog({
@@ -45,9 +33,24 @@ export function PaperFormDialog({
   paper,
   onSubmit,
 }: PaperFormDialogProps) {
+  const { t } = useTranslation(['paper', 'common', 'question'])
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+
+  // Create schema with translations
+  const paperSchema = z.object({
+    title: z.string().min(1, t('paper:validation.titleRequired')),
+    description: z.string().optional(),
+    status: z.enum(['draft', 'published', 'archived']),
+    time_limit: z.number().min(0).optional(),
+    shuffle_questions: z.boolean(),
+    shuffle_options: z.boolean(),
+    show_correct_answer: z.boolean(),
+    allow_review: z.boolean(),
+  })
+
+  type PaperFormData = z.infer<typeof paperSchema>
 
   // 获取题目列表
   const { data: questionsData, isLoading: isLoadingQuestions } = useQuery<Question[]>({
@@ -141,7 +144,7 @@ export function PaperFormDialog({
     setIsSubmitting(true)
     try {
       if (selectedQuestionIds.size === 0) {
-        throw new Error('至少需要选择一道题目')
+        throw new Error(t('paper:validation.questionsRequired'))
       }
 
       await onSubmit({
@@ -151,8 +154,8 @@ export function PaperFormDialog({
     } catch (error: any) {
       console.error('提交失败:', error)
       toast({
-        title: '提交失败',
-        description: error.message || '提交失败，请重试',
+        title: t('common:message.saveFailed'),
+        description: error.message || t('common:message.operationFailed'),
         variant: 'destructive',
       })
       throw error
@@ -165,9 +168,9 @@ export function PaperFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{paper ? '编辑试卷' : '创建试卷'}</DialogTitle>
+          <DialogTitle>{paper ? t('paper:action.edit') : t('paper:action.create')}</DialogTitle>
           <DialogDescription>
-            {paper ? '修改试卷信息' : '创建一份新试卷'}
+            {paper ? t('paper:form.description') : t('paper:form.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -176,11 +179,11 @@ export function PaperFormDialog({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                试卷标题 *
+                {t('paper:form.title')} *
               </label>
               <Input
                 {...register('title')}
-                placeholder="请输入试卷标题..."
+                placeholder={t('paper:form.titlePlaceholder')}
                 className="w-full"
               />
               {errors.title && (
@@ -190,44 +193,44 @@ export function PaperFormDialog({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                试卷描述
+                {t('paper:form.description')}
               </label>
               <textarea
                 {...register('description')}
                 rows={3}
-                placeholder="请输入试卷描述..."
+                placeholder={t('paper:form.descriptionPlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                状态 *
+                {t('paper:status.label')} *
               </label>
               <select
                 {...register('status')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="draft">草稿</option>
-                <option value="published">已发布</option>
-                <option value="archived">已归档</option>
+                <option value="draft">{t('paper:status.draft')}</option>
+                <option value="published">{t('paper:status.published')}</option>
+                <option value="archived">{t('paper:status.archived')}</option>
               </select>
             </div>
           </div>
 
           {/* 试卷设置 */}
           <div className="space-y-4 border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900">试卷设置</h3>
-            
+            <h3 className="text-sm font-medium text-gray-900">{t('paper:form.title')}</h3>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                时间限制（分钟）
+                {t('paper:form.duration')}
               </label>
               <Input
                 type="number"
                 {...register('time_limit', { valueAsNumber: true })}
                 min={0}
-                placeholder="0 表示无限制"
+                placeholder={t('paper:form.durationPlaceholder')}
                 className="w-full"
               />
             </div>
@@ -239,7 +242,7 @@ export function PaperFormDialog({
                   {...register('shuffle_questions')}
                   className="rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <span className="text-sm text-gray-700">打乱题目顺序</span>
+                <span className="text-sm text-gray-700">{t('paper:form.randomOrder')}</span>
               </label>
 
               <label className="flex items-center space-x-2">
@@ -248,7 +251,7 @@ export function PaperFormDialog({
                   {...register('shuffle_options')}
                   className="rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <span className="text-sm text-gray-700">打乱选项顺序</span>
+                <span className="text-sm text-gray-700">{t('paper:form.randomOrder')}</span>
               </label>
 
               <label className="flex items-center space-x-2">
@@ -257,7 +260,7 @@ export function PaperFormDialog({
                   {...register('show_correct_answer')}
                   className="rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <span className="text-sm text-gray-700">显示正确答案</span>
+                <span className="text-sm text-gray-700">{t('paper:form.showAnswer')}</span>
               </label>
 
               <label className="flex items-center space-x-2">
@@ -266,7 +269,7 @@ export function PaperFormDialog({
                   {...register('allow_review')}
                   className="rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <span className="text-sm text-gray-700">允许回顾</span>
+                <span className="text-sm text-gray-700">{t('paper:form.allowRetake')}</span>
               </label>
             </div>
           </div>
@@ -275,7 +278,7 @@ export function PaperFormDialog({
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-gray-900">
-                选择题目 ({selectedQuestionIds.size} 题)
+                {t('paper:form.selectQuestions')} ({selectedQuestionIds.size} {t('paper:form.questionsCount', { count: selectedQuestionIds.size })})
               </h3>
               {isLoadingQuestions && (
                 <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
@@ -284,11 +287,11 @@ export function PaperFormDialog({
 
             {isLoadingQuestions ? (
               <div className="text-center py-8 text-gray-500">
-                加载题目中...
+                {t('common:action.loading')}
               </div>
             ) : questions.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                还没有题目，请先创建题目
+                {t('question:list.empty')}
               </div>
             ) : (
               <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-2">
@@ -311,11 +314,10 @@ export function PaperFormDialog({
                               {getQuestionTypeLabel(question.type)}
                             </span>
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
-                              {question.difficulty === 'easy' ? '简单' : 
-                               question.difficulty === 'medium' ? '中等' : '困难'}
+                              {t(`question:difficulty.${question.difficulty}`)}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {question.points} 分
+                              {question.points} {t('question:form.score')}
                             </span>
                           </div>
                           <p className="text-sm text-gray-900 line-clamp-2">
@@ -337,7 +339,7 @@ export function PaperFormDialog({
             )}
 
             {selectedQuestionIds.size === 0 && (
-              <p className="text-sm text-red-500">至少需要选择一道题目</p>
+              <p className="text-sm text-red-500">{t('paper:validation.questionsRequired')}</p>
             )}
           </div>
 
@@ -348,16 +350,16 @@ export function PaperFormDialog({
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              取消
+              {t('common:action.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting || selectedQuestionIds.size === 0}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  提交中...
+                  {t('common:action.loading')}
                 </>
               ) : (
-                paper ? '更新' : '创建'
+                paper ? t('common:action.save') : t('common:action.create')
               )}
             </Button>
           </DialogFooter>
